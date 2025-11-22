@@ -71,7 +71,7 @@ func Test_ItHandlesBasicInputs(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			p := NewParser(testCase.input)
+			p, _ := NewParser(testCase.input)
 			out, err := p.Parse()
 			expected := testCase.expected()
 

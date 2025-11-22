@@ -28,8 +28,18 @@ type Parser struct {
 	inputLength uint8
 }
 
-func NewParser(in string) *Parser {
-	return &Parser{input: in, inputLength: uint8(len(in))}
+type ValidParserInput interface {
+	string|[]string
+}
+
+func NewParser[T ValidParserInput](in T) (*Parser, error) {
+	validInput, err := structureInputForParser[T](in)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &Parser{input: validInput, inputLength: uint8(len(validInput))}, nil
 }
 
 func (p *Parser) Parse() (d.Cron, error) {
@@ -68,6 +78,18 @@ func (p *Parser) Parse() (d.Cron, error) {
 	}
 
 	return p.output, nil
+}
+
+func structureInputForParser[T ValidParserInput](input any) (string, error) {
+	if out, ok := input.(string); ok {
+		return out, nil
+	}
+
+	if out, ok := input.([]string); ok {
+		return strings.Join(out, " "), nil
+	}
+
+	return "", fmt.Errorf("invalid input %v", input)
 }
 
 func (p *Parser) handleDigit() (d.CronFragment, error) {
@@ -132,7 +154,7 @@ func (p *Parser) handleWildCard() (d.CronFragment, error) {
 	nextRune := p.getCurrentToken()
 
 	switch nextRune {
-	case WILDCARD, END_OF_CRON:
+	case END_OF_FRAGMENT, END_OF_CRON:
 		p.exprBuilder.WriteRune(currRune)
 		cf, err = d.NewWildCardFragment("*")
 	case DIVISOR:
@@ -167,8 +189,8 @@ func (p *Parser) getCurrentToken() rune {
 }
 
 func (p *Parser) peekNext() rune {
-	if p.peekPos + 1 < p.inputLength {
-		return rune(p.input[p.peekPos + 1])
+	if p.peekPos+1 < p.inputLength {
+		return rune(p.input[p.peekPos+1])
 	}
 
 	return END_OF_CRON
@@ -179,13 +201,13 @@ func (p *Parser) readNumber() uint8 {
 		p.peekPos += 1
 	}
 
-	num, err := strconv.Atoi(p.input[p.currPos : p.peekPos + 1])
+	num, err := strconv.Atoi(p.input[p.currPos : p.peekPos+1])
 	if err != nil {
 		p.err = err
 
 		return 0
 	}
-	
+
 	p.currPos = p.peekPos
 
 	return uint8(num)
