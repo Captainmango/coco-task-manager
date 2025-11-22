@@ -14,13 +14,6 @@ var (
 	RANGE    OperatorType = "RANGE"
 	SINGLE   OperatorType = "SINGLE"
 
-	OperatorSigils = map[OperatorType]string{
-		WILDCARD: "*",
-		DIVISOR:  "*/",
-		LIST:     ",",
-		RANGE:    "-",
-	}
-
 	cronOutputOrder = []CronFragmentType{
 		"MINUTE",
 		"HOUR",

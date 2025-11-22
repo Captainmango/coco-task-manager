@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -10,121 +9,148 @@ import (
 	d "github.com/captainmango/coco-cron-parser/internal/data"
 )
 
+var (
+	WILDCARD        = '*'
+	DIVISOR         = '/'
+	COMMA           = ','
+	DASH            = '-'
+	END_OF_FRAGMENT = ' '
+	END_OF_CRON     rune // inits to zero. 0 is not a valid unicode char
+)
+
 type Parser struct {
-	input   string
-	currPos uint8
-	peekPos uint8
+	input       string
+	currPos     uint8
+	peekPos     uint8
+	output      d.Cron
+	exprBuilder strings.Builder
+	err         error
+	inputLength uint8
 }
 
 func NewParser(in string) *Parser {
-	return &Parser{input: in}
+	return &Parser{input: in, inputLength: uint8(len(in))}
 }
 
 func (p *Parser) Parse() (d.Cron, error) {
-	var output d.Cron
-	var err error
-
-	inputLength := len(p.input)
-	var exprBuilder strings.Builder
-
-	for p.currPos < uint8(inputLength) {
+	for p.currPos < p.inputLength {
 		var cf d.CronFragment
 
 		currRune := rune(p.input[p.currPos])
 		switch {
-		case currRune == '*':
-			p.advance()
-			nextRune := p.getCurrentToken()
-
-			switch nextRune {
-			case ' ', 'E':
-				exprBuilder.WriteRune(currRune)
-				cf, err = d.NewWildCardFragment("*")
-			case '/':
-				exprBuilder.Write([]byte{byte(currRune), byte(nextRune)})
-
-				p.advance()
-				nextRune = p.getCurrentToken()
-
-				if unicode.IsDigit(nextRune) {
-					num := p.readNumber()
-					exprBuilder.WriteString(fmt.Sprintf("%d", num))
-					cf, err = d.NewDivisorFragment(exprBuilder.String(), []uint8{num})
-				}
-			}
+		case currRune == WILDCARD:
+			cf, p.err = p.handleWildCard()
 		case unicode.IsDigit(currRune):
-			num := p.readNumber()
-			nums := []uint8{num}
-			exprBuilder.WriteString(fmt.Sprintf("%d", num))
-
-			p.advance()
-			nextRune := p.getCurrentToken()
-			done := false
-
-			switch nextRune {
-			case ',':
-				exprBuilder.WriteRune(nextRune)
-				p.advance()
-
-				for !done {
-					nextRune = p.getCurrentToken()
-					switch {
-					case nextRune == ' ',
-						nextRune == 'E':
-						cf, _ = d.NewListFragment(exprBuilder.String(), nums)
-						done = true
-					case unicode.IsDigit(nextRune):
-						num = p.readNumber()
-						nums = append(nums, num)
-						exprBuilder.WriteString(fmt.Sprintf("%d", num))
-						p.advance()
-					case nextRune == ',':
-						exprBuilder.WriteRune(nextRune)
-						p.advance()
-					default:
-						err = fmt.Errorf("malformed cron expression: '%s' invalid character after postion %d", p.input, p.peekPos)
-						done = true
-					}
-				}
-			case '-':
-				exprBuilder.WriteRune(nextRune)
-				p.advance()
-				num2 := p.readNumber()
-				nums = append(nums, num2)
-				exprBuilder.WriteString(fmt.Sprintf("%d", num2))
-				cf, _ = d.NewRangeFragment(exprBuilder.String(), nums)
-			case ' ', 'E':
-				cf, _ = d.NewSingleFragment(exprBuilder.String(), nums)
-			default:
-				err = fmt.Errorf("malformed cron expression: '%s' invalid character after postion %d", p.input, p.peekPos)
-			}
+			cf, p.err = p.handleDigit()
 		case unicode.IsSpace(currRune):
 			peekToken := p.peekNext()
 			if unicode.IsSpace(peekToken) {
-				return nil, fmt.Errorf("malformed cron expression: '%s' too many spaces at position %d", p.input, p.peekPos)
+				return nil, p.tooManySpacesErr()
 			}
 
 			if unicode.IsLetter(peekToken) {
-				return nil, fmt.Errorf("malformed cron expression: '%s' invalid character at postion %d", p.input, p.peekPos)
+				return nil, p.malformedCronErr()
 			}
 
 			p.advance()
 			continue
 		default:
-			err = errors.New("oops")
+			p.err = p.malformedCronErr()
 		}
 
+		if p.err != nil {
+			return nil, p.err
+		}
+
+		p.output = append(p.output, cf)
+		p.exprBuilder.Reset()
 		p.advance()
-
-		if err != nil {
-			return nil, err
-		}
-
-		output = append(output, cf)
-		exprBuilder.Reset()
 	}
 
-	return output, nil
+	return p.output, nil
+}
+
+func (p *Parser) handleDigit() (d.CronFragment, error) {
+	var cf d.CronFragment
+	var err error
+
+	num := p.readNumber()
+	nums := []uint8{num}
+	p.exprBuilder.WriteString(fmt.Sprintf("%d", num))
+
+	p.advance()
+	nextRune := p.getCurrentToken()
+	done := false
+
+	switch nextRune {
+	case COMMA:
+		p.exprBuilder.WriteRune(nextRune)
+		p.advance()
+
+		for !done {
+			nextRune = p.getCurrentToken()
+			switch {
+			case nextRune == END_OF_FRAGMENT,
+				nextRune == END_OF_CRON:
+				cf, p.err = d.NewListFragment(p.exprBuilder.String(), nums)
+				done = true
+			case unicode.IsDigit(nextRune):
+				num = p.readNumber()
+				nums = append(nums, num)
+				p.exprBuilder.WriteString(fmt.Sprintf("%d", num))
+				p.advance()
+			case nextRune == COMMA:
+				p.exprBuilder.WriteRune(nextRune)
+				p.advance()
+			default:
+				p.err = p.malformedCronErr()
+				done = true
+			}
+		}
+	case DASH:
+		p.exprBuilder.WriteRune(nextRune)
+		p.advance()
+		num2 := p.readNumber()
+		nums = append(nums, num2)
+		p.exprBuilder.WriteString(fmt.Sprintf("%d", num2))
+		cf, _ = d.NewRangeFragment(p.exprBuilder.String(), nums)
+	case END_OF_FRAGMENT, END_OF_CRON:
+		cf, _ = d.NewSingleFragment(p.exprBuilder.String(), nums)
+	default:
+		err = p.malformedCronErr()
+	}
+
+	return cf, err
+}
+
+func (p *Parser) handleWildCard() (d.CronFragment, error) {
+	var cf d.CronFragment
+	var err error
+
+	currRune := p.getCurrentToken()
+	p.advance()
+	nextRune := p.getCurrentToken()
+
+	switch nextRune {
+	case WILDCARD, END_OF_CRON:
+		p.exprBuilder.WriteRune(currRune)
+		cf, err = d.NewWildCardFragment("*")
+	case DIVISOR:
+		p.exprBuilder.Write([]byte{byte(currRune), byte(nextRune)})
+
+		p.advance()
+		nextRune = p.getCurrentToken()
+
+		if unicode.IsDigit(nextRune) {
+			num := p.readNumber()
+			p.exprBuilder.WriteString(fmt.Sprintf("%d", num))
+			cf, err = d.NewDivisorFragment(p.exprBuilder.String(), []uint8{num})
+		}
+	default:
+		err = p.malformedCronErr()
+	}
+
+	return cf, err
 }
 
 func (p *Parser) advance() {
@@ -133,20 +159,20 @@ func (p *Parser) advance() {
 }
 
 func (p *Parser) getCurrentToken() rune {
-	if p.currPos < uint8(len(p.input)) {
-		return rune(p.input[p.peekPos])
+	if p.currPos < p.inputLength {
+		return rune(p.input[p.currPos])
 	}
 
-	return rune('E') // Signifies the end of the expression
+	return END_OF_CRON
 }
 
 func (p *Parser) peekNext() rune {
 	p.peekPos += 1
-	if p.peekPos < uint8(len(p.input)) {
+	if p.peekPos < p.inputLength {
 		return rune(p.input[p.peekPos])
 	}
 
-	return rune('E') // Signifies the end of the expression
+	return END_OF_CRON
 }
 
 func (p *Parser) readNumber() uint8 {
@@ -160,4 +186,12 @@ func (p *Parser) readNumber() uint8 {
 	p.currPos = c
 
 	return uint8(num)
+}
+
+func (p *Parser) malformedCronErr() error {
+	return fmt.Errorf("malformed cron expression: '%s' invalid character after postion %d", p.input, p.peekPos)
+}
+
+func (p *Parser) tooManySpacesErr() error {
+	return fmt.Errorf("malformed cron expression: '%s' too many spaces at position %d", p.input, p.peekPos)
 }
