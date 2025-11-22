@@ -3,17 +3,23 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/captainmango/coco-cron-parser/internal/parser"
 )
 
 func main() {
-	cronArgs := os.Args[1:]
+	cronArgs := strings.Join(os.Args[1:], " ")
 
-	p, err := parser.NewParser(cronArgs)
+	p, err := parser.NewParser(
+		parser.WithInput(cronArgs, true),
+	)
+
 	if err != nil {
 		fmt.Print(err)
+		return
 	}
+
 	cron, _ := p.Parse()
 	fmt.Println(cron)
 }

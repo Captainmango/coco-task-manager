@@ -31,9 +31,10 @@ type Operator interface {
 }
 type OperatorType string
 type CronFragment struct {
-	Expr    string
-	kind    OperatorType
-	factors []uint8
+	Expr         string
+	FragmentType CronFragmentType
+	kind         OperatorType
+	factors      []uint8
 }
 
 type Cron []CronFragment

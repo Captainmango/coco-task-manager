@@ -29,17 +29,41 @@ type Parser struct {
 }
 
 type ValidParserInput interface {
-	string|[]string
+	string | []string
 }
 
-func NewParser[T ValidParserInput](in T) (*Parser, error) {
-	validInput, err := structureInputForParser(in)
+type ParserOption func(p *Parser) error
 
-	if err != nil {
-		return nil, err
+func WithInput[T ValidParserInput](input T, shouldValidateLength bool) ParserOption {
+	return func(p *Parser) error {
+		var inputStr string
+		var err error
+
+		inputStr, err = structureInputForParser(input, shouldValidateLength)
+
+		if err != nil {
+			return err
+		}
+
+		p.input = inputStr
+		p.inputLength = uint8(len(inputStr))
+
+		return nil
+	}
+}
+
+func NewParser(opts ...ParserOption) (*Parser, error) {
+	p := Parser{}
+
+	for _, opt := range opts {
+		err := opt(&p)
+
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	return &Parser{input: validInput, inputLength: uint8(len(validInput))}, nil
+	return &p, nil
 }
 
 func (p *Parser) Parse() (d.Cron, error) {
@@ -80,16 +104,29 @@ func (p *Parser) Parse() (d.Cron, error) {
 	return p.output, nil
 }
 
-func structureInputForParser(input any) (string, error) {
+func structureInputForParser(input any, shouldValidateLength bool) (string, error) {
+	const EXPECTED_CRON_LENGTH = 5
+
 	if out, ok := input.(string); ok {
+		inputArr := strings.Split(out, " ")
+
+		if shouldValidateLength && len(inputArr) != EXPECTED_CRON_LENGTH {
+			return "", fmt.Errorf("%s is not a valid input", out)
+		}
+
 		return out, nil
 	}
 
 	if out, ok := input.([]string); ok {
+		if shouldValidateLength && len(out) != EXPECTED_CRON_LENGTH {
+			return "", fmt.Errorf("%s is not a valid input", out)
+		}
+
 		return strings.Join(out, " "), nil
 	}
 
-	return "", fmt.Errorf("invalid input %v", input)
+	// should never reach here
+	return "", fmt.Errorf("%s is not a valid input", input)
 }
 
 func (p *Parser) handleDigit() (d.CronFragment, error) {
