@@ -8,12 +8,18 @@ import (
 type CronFragmentType string
 
 var (
+	MINUTE          = CronFragmentType("MINUTE")
+	HOUR            = CronFragmentType("HOUR")
+	DAY             = CronFragmentType("DAY")
+	MONTH           = CronFragmentType("MONTH")
+	WEEKDAY         = CronFragmentType("WEEKDAY")
+
 	cronOutputOrder = []CronFragmentType{
-		"MINUTE",
-		"HOUR",
-		"DAY",
-		"MONTH",
-		"WEEKDAY",
+		MINUTE,
+		HOUR,
+		DAY,
+		MONTH,
+		WEEKDAY,
 	}
 )
 
@@ -101,5 +107,3 @@ func NewSingleFragment(expr string, factors []uint8) (CronFragment, error) {
 		factors: factors,
 	}, nil
 }
-
-
