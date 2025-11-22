@@ -1,6 +1,9 @@
 package cron
 
-import "errors"
+import (
+	"errors"
+	"slices"
+)
 
 type CronFragmentType string
 
@@ -9,6 +12,7 @@ var (
 	DIVISOR  OperatorType = "DIVISOR"
 	LIST     OperatorType = "LIST"
 	RANGE    OperatorType = "RANGE"
+	SINGLE   OperatorType = "SINGLE"
 
 	OperatorSigils = map[OperatorType]string{
 		WILDCARD: "*",
@@ -46,6 +50,14 @@ func (c Cron) Eq(other Cron) bool {
 		if cf.Expr != other[idx].Expr {
 			return false
 		}
+
+		if cf.kind != other[idx].kind {
+			return false
+		}
+
+		if !slices.Equal(cf.factors, other[idx].factors) {
+			return false
+		}
 	}
 
 	return true
@@ -72,7 +84,7 @@ func NewRangeFragment(expr string, factors []uint8) (CronFragment, error) {
 }
 
 func NewListFragment(expr string, factors []uint8) (CronFragment, error) {
-	if len(factors) > 1 {
+	if len(factors) < 1 {
 		return CronFragment{}, errors.New("list requires at least 2 factors")
 	}
 
@@ -91,6 +103,18 @@ func NewDivisorFragment(expr string, factors []uint8) (CronFragment, error) {
 	return CronFragment{
 		Expr:    expr,
 		kind:    DIVISOR,
+		factors: factors,
+	}, nil
+}
+
+func NewSingleFragment(expr string, factors []uint8) (CronFragment, error) {
+	if len(factors) != 1 {
+		return CronFragment{}, errors.New("divisor rule only accepts one factor")
+	}
+
+	return CronFragment{
+		Expr:    expr,
+		kind:    SINGLE,
 		factors: factors,
 	}, nil
 }
