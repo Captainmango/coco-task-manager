@@ -167,23 +167,26 @@ func (p *Parser) getCurrentToken() rune {
 }
 
 func (p *Parser) peekNext() rune {
-	p.peekPos += 1
-	if p.peekPos < p.inputLength {
-		return rune(p.input[p.peekPos])
+	if p.peekPos + 1 < p.inputLength {
+		return rune(p.input[p.peekPos + 1])
 	}
 
 	return END_OF_CRON
 }
 
 func (p *Parser) readNumber() uint8 {
-	c := p.peekPos
-
 	for unicode.IsDigit(p.peekNext()) {
-		c += 1
+		p.peekPos += 1
 	}
 
-	num, _ := strconv.Atoi(p.input[p.currPos : c+1])
-	p.currPos = c
+	num, err := strconv.Atoi(p.input[p.currPos : p.peekPos + 1])
+	if err != nil {
+		p.err = err
+
+		return 0
+	}
+	
+	p.currPos = p.peekPos
 
 	return uint8(num)
 }
