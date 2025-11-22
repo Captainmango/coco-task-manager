@@ -15,7 +15,7 @@ var (
 	COMMA           = ','
 	DASH            = '-'
 	END_OF_FRAGMENT = ' '
-	END_OF_CRON     rune // inits to zero. 0 is not a valid unicode char
+	END_OF_CRON     rune // inits to zero or string terminating char
 )
 
 type Parser struct {
@@ -33,7 +33,7 @@ type ValidParserInput interface {
 }
 
 func NewParser[T ValidParserInput](in T) (*Parser, error) {
-	validInput, err := structureInputForParser[T](in)
+	validInput, err := structureInputForParser(in)
 
 	if err != nil {
 		return nil, err
@@ -80,7 +80,7 @@ func (p *Parser) Parse() (d.Cron, error) {
 	return p.output, nil
 }
 
-func structureInputForParser[T ValidParserInput](input any) (string, error) {
+func structureInputForParser(input any) (string, error) {
 	if out, ok := input.(string); ok {
 		return out, nil
 	}
