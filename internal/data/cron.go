@@ -1,4 +1,4 @@
-package cron
+package data
 
 import (
 	"errors"
@@ -8,12 +8,6 @@ import (
 type CronFragmentType string
 
 var (
-	WILDCARD OperatorType = "WILDCARD"
-	DIVISOR  OperatorType = "DIVISOR"
-	LIST     OperatorType = "LIST"
-	RANGE    OperatorType = "RANGE"
-	SINGLE   OperatorType = "SINGLE"
-
 	cronOutputOrder = []CronFragmentType{
 		"MINUTE",
 		"HOUR",
@@ -25,11 +19,6 @@ var (
 
 func (c Cron) ExpressionOrder() []CronFragmentType { return cronOutputOrder }
 
-type OperatorFn func() ([]uint8, error)
-type Operator interface {
-	Fn() ([]uint8, error)
-}
-type OperatorType string
 type CronFragment struct {
 	Expr         string
 	FragmentType CronFragmentType
@@ -112,3 +101,5 @@ func NewSingleFragment(expr string, factors []uint8) (CronFragment, error) {
 		factors: factors,
 	}, nil
 }
+
+

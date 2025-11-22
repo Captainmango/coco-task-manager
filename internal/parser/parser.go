@@ -19,13 +19,15 @@ var (
 )
 
 type Parser struct {
-	input       string
-	currPos     uint8
-	peekPos     uint8
-	output      d.Cron
-	exprBuilder strings.Builder
-	err         error
-	inputLength uint8
+	input               string
+	currPos             uint8
+	peekPos             uint8
+	output              d.Cron
+	exprBuilder         strings.Builder
+	err                 error
+	inputLength         uint8
+	currentFragmentIdx  uint8
+	currentFragmentType d.CronFragmentType
 }
 
 type ValidParserInput interface {
@@ -47,6 +49,8 @@ func WithInput[T ValidParserInput](input T, shouldValidateLength bool) ParserOpt
 
 		p.input = inputStr
 		p.inputLength = uint8(len(inputStr))
+		p.currentFragmentIdx = 0
+		p.currentFragmentType = p.output.ExpressionOrder()[p.currentFragmentIdx]
 
 		return nil
 	}
@@ -96,8 +100,10 @@ func (p *Parser) Parse() (d.Cron, error) {
 			return nil, p.err
 		}
 
+		cf.FragmentType = p.getCurrentFragmentType()
 		p.output = append(p.output, cf)
 		p.exprBuilder.Reset()
+		p.setNextFragmentType()
 		p.advance()
 	}
 
@@ -248,6 +254,21 @@ func (p *Parser) readNumber() uint8 {
 	p.currPos = p.peekPos
 
 	return uint8(num)
+}
+
+func (p *Parser) getCurrentFragmentType() d.CronFragmentType {
+	return p.currentFragmentType
+}
+
+func (p *Parser) setNextFragmentType() {
+	p.currentFragmentIdx += 1
+	order := p.output.ExpressionOrder()
+	
+	if p.currentFragmentIdx >= uint8(len(order)) {
+		p.currentFragmentIdx = uint8(len(order)) - 1
+	}
+
+	p.currentFragmentType = p.output.ExpressionOrder()[p.currentFragmentIdx]
 }
 
 func (p *Parser) malformedCronErr() error {
