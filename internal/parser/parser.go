@@ -7,7 +7,7 @@ import (
 	"strings"
 	"unicode"
 
-	t "github.com/captainmango/coco-cron-parser/internal/cron"
+	d "github.com/captainmango/coco-cron-parser/internal/data"
 )
 
 type Parser struct {
@@ -20,15 +20,15 @@ func NewParser(in string) *Parser {
 	return &Parser{input: in}
 }
 
-func (p *Parser) Parse() (t.Cron, error) {
-	var output t.Cron
+func (p *Parser) Parse() (d.Cron, error) {
+	var output d.Cron
 	var err error
 
 	inputLength := len(p.input)
 	var exprBuilder strings.Builder
 
 	for p.currPos < uint8(inputLength) {
-		var cf t.CronFragment
+		var cf d.CronFragment
 
 		currRune := rune(p.input[p.currPos])
 		switch {
@@ -39,7 +39,7 @@ func (p *Parser) Parse() (t.Cron, error) {
 			switch nextRune {
 			case ' ', 'E':
 				exprBuilder.WriteRune(currRune)
-				cf, err = t.NewWildCardFragment("*")
+				cf, err = d.NewWildCardFragment("*")
 			case '/':
 				exprBuilder.Write([]byte{byte(currRune), byte(nextRune)})
 
@@ -49,7 +49,7 @@ func (p *Parser) Parse() (t.Cron, error) {
 				if unicode.IsDigit(nextRune) {
 					num := p.readNumber()
 					exprBuilder.WriteString(fmt.Sprintf("%d", num))
-					cf, err = t.NewDivisorFragment(exprBuilder.String(), []uint8{num})
+					cf, err = d.NewDivisorFragment(exprBuilder.String(), []uint8{num})
 				}
 			}
 		case unicode.IsDigit(currRune):
@@ -60,7 +60,7 @@ func (p *Parser) Parse() (t.Cron, error) {
 			p.advance()
 			nextRune := p.getCurrentToken()
 			done := false
-			
+
 			switch nextRune {
 			case ',':
 				exprBuilder.WriteRune(nextRune)
@@ -71,7 +71,7 @@ func (p *Parser) Parse() (t.Cron, error) {
 					switch {
 					case nextRune == ' ',
 						nextRune == 'E':
-						cf, _ = t.NewListFragment(exprBuilder.String(), nums)
+						cf, _ = d.NewListFragment(exprBuilder.String(), nums)
 						done = true
 					case unicode.IsDigit(nextRune):
 						num = p.readNumber()
@@ -92,13 +92,12 @@ func (p *Parser) Parse() (t.Cron, error) {
 				num2 := p.readNumber()
 				nums = append(nums, num2)
 				exprBuilder.WriteString(fmt.Sprintf("%d", num2))
-				cf, _ = t.NewRangeFragment(exprBuilder.String(), nums)
+				cf, _ = d.NewRangeFragment(exprBuilder.String(), nums)
 			case ' ', 'E':
-				cf, _ = t.NewSingleFragment(exprBuilder.String(), nums)
+				cf, _ = d.NewSingleFragment(exprBuilder.String(), nums)
 			default:
 				err = fmt.Errorf("malformed cron expression: '%s' invalid character after postion %d", p.input, p.peekPos)
 			}
-
 		case unicode.IsSpace(currRune):
 			peekToken := p.peekNext()
 			if unicode.IsSpace(peekToken) {

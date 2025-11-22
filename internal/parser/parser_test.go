@@ -3,22 +3,22 @@ package parser
 import (
 	"testing"
 
-	tc "github.com/captainmango/coco-cron-parser/internal/cron"
+	d "github.com/captainmango/coco-cron-parser/internal/data"
 )
 
 func Test_ItHandlesBasicInputs(t *testing.T) {
 	testCases := []struct {
 		name     string
 		input    string
-		expected func() tc.Cron
+		expected func() d.Cron
 	}{
 		{
 			"wildcard",
 			"*",
-			func() tc.Cron {
-				cf, _ := tc.NewWildCardFragment("*")
+			func() d.Cron {
+				cf, _ := d.NewWildCardFragment("*")
 
-				return tc.Cron{
+				return d.Cron{
 					cf,
 				}
 			},
@@ -26,10 +26,10 @@ func Test_ItHandlesBasicInputs(t *testing.T) {
 		{
 			"range",
 			"1-5",
-			func() tc.Cron {
-				cf, _ := tc.NewRangeFragment("1-5", []uint8{1,5})
+			func() d.Cron {
+				cf, _ := d.NewRangeFragment("1-5", []uint8{1,5})
 
-				return tc.Cron{
+				return d.Cron{
 					cf,
 				}
 			},
@@ -37,10 +37,10 @@ func Test_ItHandlesBasicInputs(t *testing.T) {
 		{
 			"list",
 			"1,5",
-			func() tc.Cron {
-				cf, _ := tc.NewListFragment("1,5", []uint8{1,5})
+			func() d.Cron {
+				cf, _ := d.NewListFragment("1,5", []uint8{1,5})
 
-				return tc.Cron{
+				return d.Cron{
 					cf,
 				}
 			},
@@ -48,10 +48,10 @@ func Test_ItHandlesBasicInputs(t *testing.T) {
 		{
 			"divisor",
 			"*/30",
-			func() tc.Cron {
-				cf, _ := tc.NewDivisorFragment("*/30", []uint8{30})
+			func() d.Cron {
+				cf, _ := d.NewDivisorFragment("*/30", []uint8{30})
 
-				return tc.Cron{
+				return d.Cron{
 					cf,
 				}
 			},
@@ -59,10 +59,10 @@ func Test_ItHandlesBasicInputs(t *testing.T) {
 		{
 			"single",
 			"30",
-			func() tc.Cron {
-				cf, _ := tc.NewSingleFragment("30", []uint8{30})
+			func() d.Cron {
+				cf, _ := d.NewSingleFragment("30", []uint8{30})
 
-				return tc.Cron{
+				return d.Cron{
 					cf,
 				}
 			},
