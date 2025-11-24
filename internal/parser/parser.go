@@ -83,11 +83,11 @@ func (p *Parser) Parse() (d.Cron, error) {
 		case unicode.IsSpace(currRune):
 			peekToken := p.peekNext()
 			if unicode.IsSpace(peekToken) {
-				return nil, p.tooManySpacesErr()
+				return d.Cron{}, p.tooManySpacesErr()
 			}
 
 			if unicode.IsLetter(peekToken) {
-				return nil, p.malformedCronErr()
+				return d.Cron{}, p.malformedCronErr()
 			}
 
 			p.advance()
@@ -97,11 +97,11 @@ func (p *Parser) Parse() (d.Cron, error) {
 		}
 
 		if p.err != nil {
-			return nil, p.err
+			return d.Cron{}, p.err
 		}
 
 		cf.FragmentType = p.getCurrentFragmentType()
-		p.output = append(p.output, cf)
+		p.output.Data = append(p.output.Data, cf)
 		p.exprBuilder.Reset()
 		p.setNextFragmentType()
 		p.advance()

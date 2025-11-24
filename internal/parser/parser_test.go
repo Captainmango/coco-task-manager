@@ -19,7 +19,7 @@ func Test_ItHandlesBasicInputs(t *testing.T) {
 				cf, _ := d.NewWildCardFragment("*")
 
 				return d.Cron{
-					cf,
+					Data: []d.CronFragment{cf},
 				}
 			},
 		},
@@ -30,7 +30,7 @@ func Test_ItHandlesBasicInputs(t *testing.T) {
 				cf, _ := d.NewRangeFragment("1-5", []uint8{1, 5})
 
 				return d.Cron{
-					cf,
+					Data: []d.CronFragment{cf},
 				}
 			},
 		},
@@ -41,7 +41,7 @@ func Test_ItHandlesBasicInputs(t *testing.T) {
 				cf, _ := d.NewListFragment("1,5", []uint8{1, 5})
 
 				return d.Cron{
-					cf,
+					Data: []d.CronFragment{cf},
 				}
 			},
 		},
@@ -52,7 +52,7 @@ func Test_ItHandlesBasicInputs(t *testing.T) {
 				cf, _ := d.NewDivisorFragment("*/30", []uint8{30})
 
 				return d.Cron{
-					cf,
+					Data: []d.CronFragment{cf},
 				}
 			},
 		},
@@ -63,7 +63,7 @@ func Test_ItHandlesBasicInputs(t *testing.T) {
 				cf, _ := d.NewSingleFragment("30", []uint8{30})
 
 				return d.Cron{
-					cf,
+					Data: []d.CronFragment{cf},
 				}
 			},
 		},

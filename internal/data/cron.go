@@ -8,11 +8,11 @@ import (
 type CronFragmentType string
 
 var (
-	MINUTE          = CronFragmentType("MINUTE")
-	HOUR            = CronFragmentType("HOUR")
-	DAY             = CronFragmentType("DAY")
-	MONTH           = CronFragmentType("MONTH")
-	WEEKDAY         = CronFragmentType("WEEKDAY")
+	MINUTE  = CronFragmentType("MINUTE")
+	HOUR    = CronFragmentType("HOUR")
+	DAY     = CronFragmentType("DAY")
+	MONTH   = CronFragmentType("MONTH")
+	WEEKDAY = CronFragmentType("WEEKDAY")
 
 	cronOutputOrder = []CronFragmentType{
 		MINUTE,
@@ -21,10 +21,22 @@ var (
 		MONTH,
 		WEEKDAY,
 	}
+
+	cronOutputBounds = map[CronFragmentType]FragmentBounds{
+		MINUTE:  {59, 0},
+		HOUR:    {23, 0},
+		DAY:     {31, 1},
+		MONTH:   {12, 1},
+		WEEKDAY: {7, 1},
+	}
 )
 
 func (c Cron) ExpressionOrder() []CronFragmentType { return cronOutputOrder }
 
+type FragmentBounds struct {
+	upper uint8
+	lower uint8
+}
 type CronFragment struct {
 	Expr         string
 	FragmentType CronFragmentType
@@ -32,19 +44,21 @@ type CronFragment struct {
 	factors      []uint8
 }
 
-type Cron []CronFragment
+type Cron struct {
+	Data []CronFragment
+}
 
 func (c Cron) Eq(other Cron) bool {
-	for idx, cf := range c {
-		if cf.Expr != other[idx].Expr {
+	for idx, cf := range c.Data {
+		if cf.Expr != other.Data[idx].Expr {
 			return false
 		}
 
-		if cf.kind != other[idx].kind {
+		if cf.kind != other.Data[idx].kind {
 			return false
 		}
 
-		if !slices.Equal(cf.factors, other[idx].factors) {
+		if !slices.Equal(cf.factors, other.Data[idx].factors) {
 			return false
 		}
 	}
