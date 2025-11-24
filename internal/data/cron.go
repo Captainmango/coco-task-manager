@@ -37,11 +37,12 @@ type FragmentBounds struct {
 	upper uint8
 	lower uint8
 }
+
 type CronFragment struct {
 	Expr         string
 	FragmentType CronFragmentType
-	kind         OperatorType
-	factors      []uint8
+	Kind         OperatorType
+	Factors      []uint8
 }
 
 type Cron struct {
@@ -54,11 +55,11 @@ func (c Cron) Eq(other Cron) bool {
 			return false
 		}
 
-		if cf.kind != other.Data[idx].kind {
+		if cf.Kind != other.Data[idx].Kind {
 			return false
 		}
 
-		if !slices.Equal(cf.factors, other.Data[idx].factors) {
+		if !slices.Equal(cf.Factors, other.Data[idx].Factors) {
 			return false
 		}
 	}
@@ -69,8 +70,8 @@ func (c Cron) Eq(other Cron) bool {
 func NewWildCardFragment(expr string) (CronFragment, error) {
 	return CronFragment{
 		Expr:    expr,
-		kind:    WILDCARD,
-		factors: nil,
+		Kind:    WILDCARD,
+		Factors: nil,
 	}, nil
 }
 
@@ -81,8 +82,8 @@ func NewRangeFragment(expr string, factors []uint8) (CronFragment, error) {
 
 	return CronFragment{
 		Expr:    expr,
-		kind:    RANGE,
-		factors: factors,
+		Kind:    RANGE,
+		Factors: factors,
 	}, nil
 }
 
@@ -93,8 +94,8 @@ func NewListFragment(expr string, factors []uint8) (CronFragment, error) {
 
 	return CronFragment{
 		Expr:    expr,
-		kind:    LIST,
-		factors: factors,
+		Kind:    LIST,
+		Factors: factors,
 	}, nil
 }
 
@@ -105,8 +106,8 @@ func NewDivisorFragment(expr string, factors []uint8) (CronFragment, error) {
 
 	return CronFragment{
 		Expr:    expr,
-		kind:    DIVISOR,
-		factors: factors,
+		Kind:    DIVISOR,
+		Factors: factors,
 	}, nil
 }
 
@@ -117,7 +118,7 @@ func NewSingleFragment(expr string, factors []uint8) (CronFragment, error) {
 
 	return CronFragment{
 		Expr:    expr,
-		kind:    SINGLE,
-		factors: factors,
+		Kind:    SINGLE,
+		Factors: factors,
 	}, nil
 }
