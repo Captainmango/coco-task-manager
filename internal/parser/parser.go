@@ -19,15 +19,15 @@ var (
 )
 
 type Parser struct {
-	input               string
-	currPos             uint8
-	peekPos             uint8
-	output              d.Cron
-	exprBuilder         strings.Builder
-	err                 error
-	inputLength         uint8
-	currentFragmentIdx  uint8
-	currentFragmentType d.CronFragmentType
+	input              string
+	currPos            uint8
+	peekPos            uint8
+	output             d.Cron
+	exprBuilder        strings.Builder
+	err                error
+	inputLength        uint8
+	nextFragmentIterFn func() (d.CronFragmentType, bool)
+	stopFragmentIterFn func()
 }
 
 type ValidParserInput interface {
@@ -47,10 +47,12 @@ func WithInput[T ValidParserInput](input T, shouldValidateLength bool) ParserOpt
 			return err
 		}
 
+		nextFn, stopFn := p.output.ExpressionOrder()
+
 		p.input = inputStr
 		p.inputLength = uint8(len(inputStr))
-		p.currentFragmentIdx = 0
-		p.currentFragmentType = p.output.ExpressionOrder()[p.currentFragmentIdx]
+		p.nextFragmentIterFn = nextFn
+		p.stopFragmentIterFn = stopFn
 
 		return nil
 	}
@@ -74,7 +76,7 @@ func (p *Parser) Parse() (d.Cron, error) {
 	for p.currPos < p.inputLength {
 		var cf d.CronFragment
 
-		currRune := rune(p.input[p.currPos])
+		currRune := p.getCurrentToken()
 		switch {
 		case currRune == WILDCARD:
 			cf, p.err = p.handleWildCard()
@@ -83,27 +85,27 @@ func (p *Parser) Parse() (d.Cron, error) {
 		case unicode.IsSpace(currRune):
 			peekToken := p.peekNext()
 			if unicode.IsSpace(peekToken) {
-				return d.Cron{}, p.tooManySpacesErr()
+				return d.Cron{}, ErrTooManySpaces(p.input, p.peekPos)
 			}
 
 			if unicode.IsLetter(peekToken) {
-				return d.Cron{}, p.malformedCronErr()
+				return d.Cron{}, ErrMalformedCron(p.input, p.peekPos)
 			}
 
 			p.advance()
 			continue
 		default:
-			p.err = p.malformedCronErr()
+			p.err = ErrMalformedCron(p.input, p.peekPos)
 		}
+
+		cf.FragmentType, p.err = p.getCurrentFragmentType()
 
 		if p.err != nil {
 			return d.Cron{}, p.err
 		}
 
-		cf.FragmentType = p.getCurrentFragmentType()
 		p.output.Data = append(p.output.Data, cf)
 		p.exprBuilder.Reset()
-		p.setNextFragmentType()
 		p.advance()
 	}
 
@@ -117,7 +119,7 @@ func structureInputForParser(input any, shouldValidateLength bool) (string, erro
 		inputArr := strings.Split(out, " ")
 
 		if shouldValidateLength && len(inputArr) != EXPECTED_CRON_LENGTH {
-			return "", fmt.Errorf("%s is not a valid input", out)
+			return "", ErrInvalidInput(out)
 		}
 
 		return out, nil
@@ -125,14 +127,14 @@ func structureInputForParser(input any, shouldValidateLength bool) (string, erro
 
 	if out, ok := input.([]string); ok {
 		if shouldValidateLength && len(out) != EXPECTED_CRON_LENGTH {
-			return "", fmt.Errorf("%s is not a valid input", out)
+			return "", ErrInvalidInput(out)
 		}
 
 		return strings.Join(out, " "), nil
 	}
 
 	// should never reach here
-	return "", fmt.Errorf("%s is not a valid input", input)
+	return "", ErrInvalidInput(input)
 }
 
 func (p *Parser) handleDigit() (d.CronFragment, error) {
@@ -168,7 +170,7 @@ func (p *Parser) handleDigit() (d.CronFragment, error) {
 				p.exprBuilder.WriteRune(nextRune)
 				p.advance()
 			default:
-				p.err = p.malformedCronErr()
+				p.err = ErrMalformedCron(p.input, p.peekPos)
 				done = true
 			}
 		}
@@ -182,7 +184,7 @@ func (p *Parser) handleDigit() (d.CronFragment, error) {
 	case END_OF_FRAGMENT, END_OF_CRON:
 		cf, _ = d.NewSingleFragment(p.exprBuilder.String(), nums)
 	default:
-		err = p.malformedCronErr()
+		err = ErrMalformedCron(p.input, p.peekPos)
 	}
 
 	return cf, err
@@ -212,7 +214,7 @@ func (p *Parser) handleWildCard() (d.CronFragment, error) {
 			cf, err = d.NewDivisorFragment(p.exprBuilder.String(), []uint8{num})
 		}
 	default:
-		err = p.malformedCronErr()
+		err = ErrMalformedCron(p.input, p.peekPos)
 	}
 
 	return cf, err
@@ -256,25 +258,13 @@ func (p *Parser) readNumber() uint8 {
 	return uint8(num)
 }
 
-func (p *Parser) getCurrentFragmentType() d.CronFragmentType {
-	return p.currentFragmentType
-}
+func (p *Parser) getCurrentFragmentType() (d.CronFragmentType, error) {
+	cType, ok := p.nextFragmentIterFn()
 
-func (p *Parser) setNextFragmentType() {
-	p.currentFragmentIdx += 1
-	order := p.output.ExpressionOrder()
-	
-	if p.currentFragmentIdx >= uint8(len(order)) {
-		p.currentFragmentIdx = uint8(len(order)) - 1
+	if !ok {
+		return "", ErrUnableToPullNextFragment()
 	}
 
-	p.currentFragmentType = p.output.ExpressionOrder()[p.currentFragmentIdx]
+	return cType, nil
 }
 
-func (p *Parser) malformedCronErr() error {
-	return fmt.Errorf("malformed cron expression: '%s' invalid character after postion %d", p.input, p.peekPos)
-}
-
-func (p *Parser) tooManySpacesErr() error {
-	return fmt.Errorf("malformed cron expression: '%s' too many spaces at position %d", p.input, p.peekPos)
-}

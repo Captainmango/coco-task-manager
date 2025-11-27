@@ -1,7 +1,7 @@
 package data
 
 import (
-	"errors"
+	"iter"
 	"slices"
 )
 
@@ -31,7 +31,11 @@ var (
 	}
 )
 
-func (c Cron) ExpressionOrder() []CronFragmentType { return cronOutputOrder }
+func (c Cron) ExpressionOrder() (func() (CronFragmentType, bool), func()) {
+	cronOrderIterNext, cronIterStop := iter.Pull(slices.Values(cronOutputOrder))
+
+	return cronOrderIterNext, cronIterStop
+}
 
 type FragmentBounds struct {
 	upper uint8
@@ -52,6 +56,10 @@ type Cron struct {
 func (c Cron) Eq(other Cron) bool {
 	for idx, cf := range c.Data {
 		if cf.Expr != other.Data[idx].Expr {
+			return false
+		}
+
+		if cf.FragmentType != other.Data[idx].FragmentType {
 			return false
 		}
 
@@ -77,7 +85,7 @@ func NewWildCardFragment(expr string) (CronFragment, error) {
 
 func NewRangeFragment(expr string, factors []uint8) (CronFragment, error) {
 	if len(factors) != 2 {
-		return CronFragment{}, errors.New("range only accepts 2 factors")
+		return CronFragment{}, ErrInvalidRangeFragment()
 	}
 
 	return CronFragment{
@@ -89,7 +97,7 @@ func NewRangeFragment(expr string, factors []uint8) (CronFragment, error) {
 
 func NewListFragment(expr string, factors []uint8) (CronFragment, error) {
 	if len(factors) < 1 {
-		return CronFragment{}, errors.New("list requires at least 2 factors")
+		return CronFragment{}, ErrInvalidListFragment()
 	}
 
 	return CronFragment{
@@ -101,7 +109,7 @@ func NewListFragment(expr string, factors []uint8) (CronFragment, error) {
 
 func NewDivisorFragment(expr string, factors []uint8) (CronFragment, error) {
 	if len(factors) != 1 {
-		return CronFragment{}, errors.New("divisor rule only accepts one factor")
+		return CronFragment{}, ErrInvalidDivisorFragment()
 	}
 
 	return CronFragment{
@@ -113,7 +121,7 @@ func NewDivisorFragment(expr string, factors []uint8) (CronFragment, error) {
 
 func NewSingleFragment(expr string, factors []uint8) (CronFragment, error) {
 	if len(factors) != 1 {
-		return CronFragment{}, errors.New("divisor rule only accepts one factor")
+		return CronFragment{}, ErrInvalidSingleFragment()
 	}
 
 	return CronFragment{

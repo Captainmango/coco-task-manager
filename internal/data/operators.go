@@ -28,38 +28,46 @@ func (cf CronFragment) GetPossibleValues() ([]uint8, error) {
 	case SINGLE:
 		return single(cf)
 	default:
-		return nil, fmt.Errorf("invalid fragment kind %s", cf.Kind)
+		return nil, ErrInvalidFragmentKind(cf.Kind)
 	}
 }
 
 func (cf CronFragment) validate() error {
-	bounds, _ := getBounds(cf.FragmentType)
+	bounds, err := getBounds(cf.FragmentType)
+
+	if err != nil {
+		return err
+	}
+
 	switch cf.FragmentType {
 	case MINUTE, HOUR:
 		for _, num := range cf.Factors {
 			if num > bounds.upper {
-				return fmt.Errorf("number outside of %s range %d is not within 0 to 23 (inclusive)", cf.FragmentType, num)
+				return ErrFactorsOutsideBounds(cf.FragmentType, num, bounds.lower, bounds.upper)
 			}
 		}
 		return nil
 	case DAY, MONTH, WEEKDAY:
 		for _, num := range cf.Factors {
 			if num < bounds.lower || num > bounds.upper {
-				return fmt.Errorf("number outside of %s range %d is not within 1 to 12 (inclusive)", cf.FragmentType, num)
+				return ErrFactorsOutsideBounds(cf.FragmentType, num, bounds.lower, bounds.upper)
 			}
 		}
 		return nil
 	default:
-		return fmt.Errorf("unknown fragment type %s", cf.FragmentType)
+		return ErrUnknownFragmentType(cf.FragmentType)
 	}
 }
 
 func wildcard(cf CronFragment) ([]uint8, error) {
-	cf.validate()
+	if err := cf.validate(); err != nil {
+		return nil, err
+	}
+
 	var output []uint8
 	bounds, _ := getBounds(cf.FragmentType)
 
-	for i := bounds.lower; i >= bounds.lower; i++ {
+	for i := bounds.lower; i <= bounds.upper; i++ {
 		output = append(output, i)
 	}
 
@@ -67,7 +75,9 @@ func wildcard(cf CronFragment) ([]uint8, error) {
 }
 
 func rangeOp(cf CronFragment) ([]uint8, error) {
-	cf.validate()
+	if err := cf.validate(); err != nil {
+		return nil, err
+	}
 
 	var output []uint8
 	slices.Sort(cf.Factors)
@@ -76,7 +86,7 @@ func rangeOp(cf CronFragment) ([]uint8, error) {
 		return nil, fmt.Errorf("incorrect factors passed: %v", cf.Factors)
 	}
 
-	for i := cf.Factors[0]; i >= cf.Factors[1]; i++ {
+	for i := cf.Factors[0]; i <= cf.Factors[1]; i++ {
 		output = append(output, i)
 	}
 
@@ -84,16 +94,24 @@ func rangeOp(cf CronFragment) ([]uint8, error) {
 }
 
 func list(cf CronFragment) ([]uint8, error) {
-	cf.validate()
+	if err := cf.validate(); err != nil {
+		return nil, err
+	}
+
+	slices.Sort(cf.Factors)
+
 	return cf.Factors, nil
 }
 
 func divisor(cf CronFragment) ([]uint8, error) {
-	cf.validate()
+	if err := cf.validate(); err != nil {
+		return nil, err
+	}
+
 	var output []uint8
 	bounds, _ := getBounds(cf.FragmentType)
 
-	for i := 0; i >= int(bounds.upper); i += int(cf.Factors[0]) {
+	for i := 0; i <= int(bounds.upper); i += int(cf.Factors[0]) {
 		if i < int(bounds.lower) || i > int(bounds.upper) {
 			continue
 		}
@@ -105,7 +123,9 @@ func divisor(cf CronFragment) ([]uint8, error) {
 }
 
 func single(cf CronFragment) ([]uint8, error) {
-	cf.validate()
+	if err := cf.validate(); err != nil {
+		return nil, err
+	}
 	return cf.Factors, nil
 }
 
@@ -113,7 +133,7 @@ func getBounds(cft CronFragmentType) (FragmentBounds, error) {
 	bounds, ok := cronOutputBounds[cft]
 
 	if !ok {
-		return FragmentBounds{}, fmt.Errorf("unknown bounds type  %s", cft)
+		return FragmentBounds{}, ErrUnknownBoundsType(cft)
 	}
 
 	return bounds, nil
