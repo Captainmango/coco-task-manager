@@ -1,11 +1,17 @@
 package data
 
 import (
+	"fmt"
 	"iter"
 	"slices"
+	"strings"
+
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 type CronFragmentType string
+type PrintingMode string
 
 var (
 	MINUTE  = CronFragmentType("MINUTE")
@@ -29,6 +35,9 @@ var (
 		MONTH:   {12, 1},
 		WEEKDAY: {7, 1},
 	}
+
+	POSSIBLE_VALUES = PrintingMode("POSSIBLE_VALUES")
+	RAW_EXPRESSION  = PrintingMode("RAW_EXPRESSION")
 )
 
 func (c Cron) ExpressionOrder() (func() (CronFragmentType, bool), func()) {
@@ -50,7 +59,8 @@ type CronFragment struct {
 }
 
 type Cron struct {
-	Data []CronFragment
+	Data         []CronFragment
+	PrintingMode PrintingMode
 }
 
 func (c Cron) Eq(other Cron) bool {
@@ -73,6 +83,44 @@ func (c Cron) Eq(other Cron) bool {
 	}
 
 	return true
+}
+
+func (c Cron) MarshalText() ([]byte, error) {
+	var builder strings.Builder
+	caser := cases.Title(language.English)
+
+	switch c.PrintingMode {
+	case POSSIBLE_VALUES:
+		for _, cf := range c.Data {
+			var strNums []string
+			vals, _ := cf.GetPossibleValues()
+			for _, num := range vals {
+				strNums = append(strNums, fmt.Sprintf("%d", num))
+			}
+			
+			out := fmt.Sprintf("%-10s | %v\n", caser.String(string(cf.FragmentType)), strings.Join(strNums, ", "))
+			builder.WriteString(out)
+		}
+	case RAW_EXPRESSION:
+		var exprs []string
+		for _, cf := range c.Data {
+			exprs = append(exprs, cf.Expr)
+		}
+		builder.WriteString(strings.Join(exprs, " "))
+	default:
+		var exprs []string
+		for _, cf := range c.Data {
+			exprs = append(exprs, cf.Expr)
+		}
+		builder.WriteString(strings.Join(exprs, " "))
+	}
+
+	return []byte(builder.String()), nil
+}
+
+func (c Cron) String() string {
+	out, _ := c.MarshalText()
+	return string(out)
 }
 
 func NewWildCardFragment(expr string) (CronFragment, error) {

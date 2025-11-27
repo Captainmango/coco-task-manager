@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/captainmango/coco-cron-parser/internal/data"
 	"github.com/captainmango/coco-cron-parser/internal/parser"
 )
 
@@ -21,5 +22,6 @@ func main() {
 	}
 
 	cron, _ := p.Parse()
-	fmt.Println(cron)
+	cron.PrintingMode = data.POSSIBLE_VALUES
+	fmt.Printf("%s\n", cron)
 }
