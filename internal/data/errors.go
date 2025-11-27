@@ -6,10 +6,10 @@ import (
 )
 
 const (
-	ErrUnknownBoundsTypeFmt = "unknown bounds type %s"
-	ErrFactorsOutsideBoundsFmt = "number outside of %s range %d is not within %d to %d (inclusive)"
-	ErrUnknownFragmentTypeFmt = "unknown fragment type %s"
-	ErrInvalidFragmentKindFmt = "invalid fragment kind %s"
+	errUnknownBoundsTypeFmt = "unknown bounds type %s"
+	errFactorsOutsideBoundsFmt = "number outside of %s range %d is not within %d to %d (inclusive)"
+	errUnknownFragmentTypeFmt = "unknown fragment type %s"
+	errInvalidFragmentKindFmt = "invalid fragment kind %s"
 )
 
 func ErrInvalidDivisorFragment() error {
@@ -29,17 +29,17 @@ func ErrInvalidRangeFragment() error {
 }
 
 func ErrUnknownBoundsType(cft CronFragmentType) error {
-	return fmt.Errorf(ErrUnknownBoundsTypeFmt, cft)
+	return fmt.Errorf(errUnknownBoundsTypeFmt, cft)
 }
 
 func ErrFactorsOutsideBounds(fragmentType, factor, lower, upper any) error {
-	return fmt.Errorf(ErrFactorsOutsideBoundsFmt, fragmentType, factor, lower, upper)
+	return fmt.Errorf(errFactorsOutsideBoundsFmt, fragmentType, factor, lower, upper)
 }
 
 func ErrUnknownFragmentType(fragmentType CronFragmentType) error {
-	return fmt.Errorf(ErrUnknownFragmentTypeFmt, fragmentType)
+	return fmt.Errorf(errUnknownFragmentTypeFmt, fragmentType)
 }
 
 func ErrInvalidFragmentKind(fragmentKind OperatorType) error {
-	return fmt.Errorf(ErrInvalidFragmentKindFmt, fragmentKind)
+	return fmt.Errorf(errInvalidFragmentKindFmt, fragmentKind)
 }

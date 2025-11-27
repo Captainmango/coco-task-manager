@@ -97,16 +97,12 @@ func (c Cron) MarshalText() ([]byte, error) {
 			for _, num := range vals {
 				strNums = append(strNums, fmt.Sprintf("%d", num))
 			}
-			
+
 			out := fmt.Sprintf("%-10s | %v\n", caser.String(string(cf.FragmentType)), strings.Join(strNums, ", "))
 			builder.WriteString(out)
 		}
 	case RAW_EXPRESSION:
-		var exprs []string
-		for _, cf := range c.Data {
-			exprs = append(exprs, cf.Expr)
-		}
-		builder.WriteString(strings.Join(exprs, " "))
+		fallthrough
 	default:
 		var exprs []string
 		for _, cf := range c.Data {

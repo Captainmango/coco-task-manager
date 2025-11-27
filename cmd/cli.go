@@ -22,6 +22,6 @@ func main() {
 	}
 
 	cron, _ := p.Parse()
-	cron.PrintingMode = data.POSSIBLE_VALUES
+	cron.PrintingMode = data.RAW_EXPRESSION
 	fmt.Printf("%s\n", cron)
 }

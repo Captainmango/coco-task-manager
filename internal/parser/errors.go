@@ -6,13 +6,13 @@ import (
 )
 
 const (
-	ErrInvalidInputFmt = "%s is not a valid input"
-	ErrMalformedCronFmt = "malformed cron expression: '%s' invalid character after postion %d"
-	ErrTooManySpacesFmt = "malformed cron expression: '%s' too many spaces at position %d"
+	errInvalidInputFmt = "%s is not a valid input"
+	errMalformedCronFmt = "malformed cron expression: '%s' invalid character after postion %d"
+	errTooManySpacesFmt = "malformed cron expression: '%s' too many spaces at position %d"
 )
 
 func ErrInvalidInput(val any) error {
-	return fmt.Errorf(ErrInvalidInputFmt, val)
+	return fmt.Errorf(errInvalidInputFmt, val)
 }
 
 func ErrUnableToPullNextFragment() error {
@@ -20,11 +20,11 @@ func ErrUnableToPullNextFragment() error {
 }
 
 func ErrMalformedCron(input any, position uint8) error {
-	return fmt.Errorf(ErrMalformedCronFmt, input, position)
+	return fmt.Errorf(errMalformedCronFmt, input, position)
 }
 
 func ErrTooManySpaces(input any, position uint8) error {
-	return fmt.Errorf(ErrTooManySpacesFmt, input, position)
+	return fmt.Errorf(errTooManySpacesFmt, input, position)
 }
 
 
