@@ -1,0 +1,14 @@
+# https://taskfile.dev
+
+version: '3'
+
+vars:
+  IMAGE_PATH: "./build/docker/Dockerfile"
+  IMAGE_TAG: "coco-task-manager"
+
+tasks:
+  build-image:
+    desc: Build the Docker image for the application
+    cmds:
+      - docker build -t {{.IMAGE_TAG}}:latest -f {{.IMAGE_PATH}} .
+    silent: true

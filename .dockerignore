@@ -1,3 +1,4 @@
 build/
 .dockerignore
 README.md
+Taskfile.yml
