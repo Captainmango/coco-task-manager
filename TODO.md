@@ -1,10 +1,10 @@
 ## Todo list
 
 - [] Set up API
-  - [] Set up middleware
-    - [] Logging
-    - [] RequestID
-    - [] CORS? (probably not... yet)
+  - [x] Set up middleware
+    - [x] Logging
+    - [x] RequestID
+    - [] ~CORS? (probably not... yet)~
   - [] Accept requests on routes specified in e2e tests
   - [] DTOs?
   - [] database? (how do I store tasks that the API will reference?)

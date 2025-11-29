@@ -1,19 +1,35 @@
 package main
 
 import (
+	"log/slog"
 	"net/http"
+	"os"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 )
 
+type (
+	app struct {
+		logger *slog.Logger
+	}
+)
+
 func main() {
-    r := chi.NewRouter()
-    r.Use(middleware.Logger)
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+	a := &app{
+		logger: logger,
+	}
 
-    r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-        w.Write([]byte("Hello World!"))
-    })
+    a.logger.Info("booting application")
 
-    http.ListenAndServe(":3000", r)
+	r := chi.NewRouter()
+	r.Use(middleware.RequestID)
+    a.logger.Info("initialising routes")
+	r.Use(customLoggingMiddleware(logger))
+
+	router := a.attachRoutes(r)
+
+    a.logger.Info("app starting")
+	http.ListenAndServe(":3000", router)
 }
