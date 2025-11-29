@@ -13,7 +13,7 @@ func customLoggingMiddleware(l *slog.Logger) func(next http.Handler) http.Handle
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			reqStart := time.Now()
 
-			rw := responseWriter{w, 200}
+			rw := &responseWriter{w, 200}
 			next.ServeHTTP(rw, r)
 
 			duration := time.Since(reqStart)

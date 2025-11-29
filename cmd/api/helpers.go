@@ -16,7 +16,7 @@ type responseWriter struct {
 }
 
 // So we can read the status code in our custom logging
-func (rw *responseWriter) writeStatus(statusCode int) {
+func (rw *responseWriter) WriteHeader(statusCode int) {
 	rw.statusCode = statusCode
 	rw.ResponseWriter.WriteHeader(statusCode)
 }
