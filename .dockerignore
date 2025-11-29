@@ -1,4 +1,5 @@
-build/
+build/docker/Dockerfile
 .dockerignore
 README.md
 Taskfile.yml
+e2e/
