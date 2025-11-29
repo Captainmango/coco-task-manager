@@ -21,15 +21,16 @@ func main() {
 		logger: logger,
 	}
 
-    a.logger.Info("booting application")
+	a.logger.Info("booting application")
 
 	r := chi.NewRouter()
 	r.Use(middleware.RequestID)
-    a.logger.Info("initialising routes")
 	r.Use(customLoggingMiddleware(logger))
+    
+	a.logger.Info("initialising routes")
+	apiV1Router := a.apiV1Router()
+    r.Mount("/api/v1", apiV1Router)
 
-	router := a.attachRoutes(r)
-
-    a.logger.Info("app starting")
-	http.ListenAndServe(":3000", router)
+	a.logger.Info("app starting")
+	http.ListenAndServe(":3000", r)
 }

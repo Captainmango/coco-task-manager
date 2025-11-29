@@ -6,8 +6,10 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-func (a *app) attachRoutes(r *chi.Mux) *chi.Mux {
-	r.Get("/api/v1/livez", func(w http.ResponseWriter, r *http.Request) {
+func (a *app) apiV1Router() *chi.Mux {
+	r := chi.NewRouter()
+	
+	r.Get("/livez", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Hello World!"))
 	})
 
