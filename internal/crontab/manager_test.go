@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-const expectedCrontabFormat = "%s root %s | tee /tmp/log\n"
+const expectedCrontabFormat = "%s root %s | tee /tmp/log # %s\n"
 
 type CronTabManagerTestSuite struct {
 	suite.Suite
@@ -35,13 +35,13 @@ func (s *CronTabManagerTestSuite) TearDownTest() {
 
 
 func (s *CronTabManagerTestSuite) Test_ItWritesToCrontabFile() {
-	err := WriteCronToSchedule(s.cron, "./test-command")
+	err := WriteCronToSchedule(s.cron, "./test-command", "test")
 	if err != nil {
 		s.T().Fatal(err)
 		return
 	}
 
-	expected := fmt.Sprintf(expectedCrontabFormat, s.cron, "./test-command")
+	expected := fmt.Sprintf(expectedCrontabFormat, s.cron, "./test-command", "test-id")
 	
 	out := readFromPath(s.T(), config.Config.CrontabFile)
 

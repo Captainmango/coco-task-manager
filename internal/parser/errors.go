@@ -27,4 +27,7 @@ func ErrTooManySpaces(input any, position uint8) error {
 	return fmt.Errorf(errTooManySpacesFmt, input, position)
 }
 
+func invalidCronTabEntry(input string) error {
+	return fmt.Errorf("%s is not a valid crontab entry", input)
+}
 
