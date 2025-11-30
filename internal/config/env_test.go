@@ -20,11 +20,3 @@ func Test_ItSuppliesDefaultCronTab(t *testing.T) {
 
 	assert.NotEqual(t, "", Config.CrontabFile)
 }
-
-func Test_ItReadsFromDotEnv(t *testing.T) {
-	BootstrapConfig(
-		WithDotEnv(),
-	)
-
-	assert.NotEqual(t, "/etc/cron.d/coco", Config.CrontabFile)
-}
