@@ -9,29 +9,43 @@ import (
 	"github.com/captainmango/coco-cron-parser/internal/data"
 	"github.com/captainmango/coco-cron-parser/internal/utils"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
 )
 
 const expectedCrontabFormat = "%s root %s | tee /tmp/log\n"
 
-func Test_ItWritesToCrontabFile(t *testing.T) {
+type CronTabManagerTestSuite struct {
+	suite.Suite
+	cron data.Cron
+}
+
+func Test_RunManagerTestSuite(t *testing.T) {
+	suite.Run(t, new(CronTabManagerTestSuite))
+}
+
+func (s *CronTabManagerTestSuite) SetupTest() {
 	config.BootstrapConfig()
 	config.Config.CrontabFile = utils.BasePath("e2e/storage/crontab")
+	s.cron = exampleTestCron()
+}
 
-	c := exampleTestCron()
+func (s *CronTabManagerTestSuite) TearDownTest() {
+	resetFileFromPath(s.T(), config.Config.CrontabFile)
+}
 
-	err := WriteCronToSchedule(c, "./test-command")
+
+func (s *CronTabManagerTestSuite) Test_ItWritesToCrontabFile() {
+	err := WriteCronToSchedule(s.cron, "./test-command")
 	if err != nil {
-		t.Fatal(err)
+		s.T().Fatal(err)
 		return
 	}
 
-	expected := fmt.Sprintf(expectedCrontabFormat, c, "./test-command")
+	expected := fmt.Sprintf(expectedCrontabFormat, s.cron, "./test-command")
 	
-	out := readFromPath(t, config.Config.CrontabFile)
+	out := readFromPath(s.T(), config.Config.CrontabFile)
 
-	assert.Equal(t, expected, out)
-
-	resetFileFromPath(t, config.Config.CrontabFile)
+	assert.Equal(s.T(), expected, out)
 }
 
 func exampleTestCron() data.Cron {
