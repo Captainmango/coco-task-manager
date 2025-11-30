@@ -5,7 +5,7 @@
     - [x] Logging
     - [x] RequestID
     - [] ~CORS? (probably not... yet)~
-  - [] Accept requests on routes specified in e2e tests
+  - [x] Accept requests on routes specified in e2e tests
   - [] DTOs?
   - [] database? (how do I store tasks that the API will reference?)
   - [] Write to crontab file
