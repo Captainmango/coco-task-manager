@@ -17,7 +17,7 @@ check_crond_up() {
 }
 
 log INFO "starting crond in the background"
-crond
+crond -f -p -m off & # add -x pars,proc if we need to debug the container
 check_crond_up
 
 if [ "$#" -gt 0 ]; then
