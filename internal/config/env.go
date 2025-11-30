@@ -7,6 +7,8 @@ import (
 	"github.com/joho/godotenv"
 )
 
+var Config config
+
 type config struct {
 	CrontabFile string `env:"CRONTAB_FILE" envDefault:"./e2e/storage/crontab"`
 }
@@ -32,8 +34,6 @@ func WithDotEnvPath(path string) ConfigOptFn {
 		o.dotEnvPath = path
 	}
 }
-
-var Config config
 
 func BootstrapConfig(configOpts... ConfigOptFn) {
 	opts := &opts{}

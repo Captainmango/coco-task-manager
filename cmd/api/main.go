@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
@@ -10,37 +11,18 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
-)
-
-type (
-	app struct {
-		logger *slog.Logger
-	}
+	coco_http "github.com/captainmango/coco-cron-parser/internal/http"
 )
 
 func main() {
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
-	a := &app{
-		logger: logger,
-	}
-
-	a.logger.Info("booting application")
-
-	r := chi.NewRouter()
-	r.Use(middleware.RequestID)
-	r.Use(customLoggingMiddleware(logger))
-
-	a.logger.Info("app starting")
-
-    server := &http.Server{Addr: ":3000", Handler: a.apiV1Router(r)}
+	srv := coco_http.CreateApp()
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
+	fmt.Printf("application running at %s \n", srv.Addr)
 	go func() {
-		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			slog.Error(err.Error())
             os.Exit(1)
             return
@@ -48,10 +30,11 @@ func main() {
 	}()
 
 	<-ctx.Done()
+	slog.Info("application shutting down")
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	if err := server.Shutdown(shutdownCtx); err != nil {
+	if err := srv.Shutdown(shutdownCtx); err != nil {
 		slog.Error(err.Error())
         os.Exit(0)
         return

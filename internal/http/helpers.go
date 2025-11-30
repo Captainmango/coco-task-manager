@@ -1,4 +1,4 @@
-package main
+package coco_http
 
 import (
 	"encoding/json"
