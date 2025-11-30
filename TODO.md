@@ -4,14 +4,25 @@
   - [x] Set up middleware
     - [x] Logging
     - [x] RequestID
-    - [] ~CORS? (probably not... yet)~
   - [x] Accept requests on routes specified in e2e tests
-  - [] DTOs?
-  - [] database? (how do I store tasks that the API will reference?)
-  - [] Write to crontab file
+  - [x] Write to crontab file
+    - [] Label crontabs by ID (use uuidv7)
+    - [] Read crontabs from file (get all of them and present nicely)
+    - [] Find cron entry by ID (use a hash followed by the ID as my nomenclature)
+    - [] Delete entry from crontab
+  - [] Set up CLI registry
+    - [] boot registry in main
+    - [] Write the commands (urfavcli)
+    - [] Get all commands and payloads presented nicely
+  - [] create the tasks resource
+    - [] Get all tasks that can be scheduled (from registry)
+    - [] Get all tasks that are scheduled (from crontab)
+    - [] Schedule a task (write to crontab)
+    - [] Find task by ID (in crontab)
+    - [] Delete task (from crontab)
 - [] Set up publisher
   - [] Set up RabbitMQ
     - [] Docker compose?
-    - [] env vars?
+    - [x] env vars?
   - [] exe to push to topic
     - [] Read from db or just encode in command in crontab?
