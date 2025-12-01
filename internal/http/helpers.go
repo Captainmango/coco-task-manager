@@ -90,8 +90,10 @@ func (a *app) readJSON(w http.ResponseWriter, r *http.Request, dst any) error {
 }
 
 type Response[T any] struct {
-	Type string `json:"type"`
-	Data T      `json:"data"`
+	Type  string         `json:"type"`
+	Data  T              `json:"data"`
+	Error error          `json:"error"`
+	Meta  map[string]any `json:"meta"`
 }
 
 type ResponseOptFn[T any] func(r *Response[T])
@@ -115,5 +117,17 @@ func WithType[T any](t string) ResponseOptFn[T] {
 func WithData[T any](d T) ResponseOptFn[T] {
 	return func(o *Response[T]) {
 		o.Data = d
+	}
+}
+
+func WithError[T any](e error) ResponseOptFn[T] {
+	return func(o *Response[T]) {
+		o.Error = e
+	}
+}
+
+func WithMeta[T any](m map[string]any) ResponseOptFn[T] {
+	return func(o *Response[T]) {
+		o.Meta = m
 	}
 }

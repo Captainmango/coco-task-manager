@@ -1,13 +1,15 @@
 GET {{ host }}/api/v1/livez
 Content-Type: application/json
 HTTP 200
+[Asserts]
+jsonpath "$.status" == "OK"
 
 GET {{ host }}/api/v1/tasks
 Content-Type: application/json
 HTTP 200
 [Asserts]
 jsonpath "$.type" == "task"
-jsonpath "$.data" count == 1
+jsonpath "$.data" count == 0
 
 POST {{ host }}/api/v1/tasks
 Content-Type: application/json
