@@ -2,26 +2,24 @@ package main
 
 import (
 	"fmt"
-	"os"
-	"strings"
 
-	"github.com/captainmango/coco-cron-parser/internal/data"
-	"github.com/captainmango/coco-cron-parser/internal/parser"
+	"github.com/captainmango/coco-cron-parser/internal/commands"
 )
 
 func main() {
-	cronArgs := strings.Join(os.Args[1:], " ")
+	fmt.Println(commands.Registry.Commands...)
+	// cronArgs := strings.Join(os.Args[1:], " ")
 
-	p, err := parser.NewParser(
-		parser.WithInput(cronArgs, true),
-	)
+	// p, err := parser.NewParser(
+	// 	parser.WithInput(cronArgs, true),
+	// )
 
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return
+	// }
 
-	cron, _ := p.Parse()
-	cron.PrintingMode = data.RAW_EXPRESSION
-	fmt.Printf("%s\n", cron)
+	// cron, _ := p.Parse()
+	// cron.PrintingMode = data.RAW_EXPRESSION
+	// fmt.Printf("%s\n", cron)
 }
