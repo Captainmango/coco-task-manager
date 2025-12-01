@@ -8,7 +8,6 @@ import (
 
 	"github.com/captainmango/coco-cron-parser/internal/config"
 	"github.com/captainmango/coco-cron-parser/internal/data"
-	"github.com/captainmango/coco-cron-parser/internal/parser"
 	"github.com/google/uuid"
 )
 
@@ -21,19 +20,15 @@ var (
 // Sets the cron printing mode to RAW_EXPRESSION and writes to the configured crontab file
 func WriteCronToSchedule(cron data.Cron, cmd string, id string) error {
 	cron.PrintingMode = data.RAW_EXPRESSION
-	file := config.Config.CrontabFile
 
-	if file == "" {
-		return errCrontabFileNotSet
-	}
+	err := withCrontab(func(f *os.File) error {
+		_, err := fmt.Fprintf(f, cronFormat, cron, cmd, id)
+		if err != nil {
+			return err
+		}
 
-	crontab, err := os.OpenFile(file, os.O_APPEND|os.O_CREATE|os.O_RDWR, 0644)
-	if err != nil {
-		return err
-	}
-	defer crontab.Close()
-
-	_, err = fmt.Fprintf(crontab, cronFormat, cron, cmd, id)
+		return nil
+	})
 
 	if err != nil {
 		return err
@@ -42,38 +37,35 @@ func WriteCronToSchedule(cron data.Cron, cmd string, id string) error {
 	return nil
 }
 
-func GetAllCrontabEntries() ([]parser.CrontabEntry, error) {
-	var out []parser.CrontabEntry
-	file := config.Config.CrontabFile
+func GetAllCrontabEntries() ([]CrontabEntry, error) {
+	var out []CrontabEntry
 
-	if file == "" {
-		return nil, errCrontabFileNotSet
-	}
+	err := withCrontab(func(f *os.File) error {
+		scanner := bufio.NewScanner(f)
 
-	crontab, err := os.OpenFile(file, os.O_APPEND|os.O_CREATE|os.O_RDWR, 0644)
-	if err != nil {
-		return nil, err
-	}
-	defer crontab.Close()
+		for scanner.Scan() {
+			line := scanner.Text()
 
-	scanner := bufio.NewScanner(crontab)
+			ctbE, err := NewCrontabEntryFromString(line)
+			if err != nil {
+				return err
+			}
 
-	for scanner.Scan() {
-		line := scanner.Text()
-
-		ctbE, err := parser.NewCrontabEntryFromString(line)
-		if err != nil {
-			return nil, err
+			out = append(out, ctbE)
 		}
 
-		out = append(out, ctbE)
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
 	}
 
 	return out, nil
 }
 
-func GetCrontabEntryByID(id uuid.UUID) (parser.CrontabEntry, error) {
-	var ctbE parser.CrontabEntry
+func GetCrontabEntryByID(id uuid.UUID) (CrontabEntry, error) {
+	var ctbE CrontabEntry
 	allEntries, err := GetAllCrontabEntries()
 	if err != nil {
 		return ctbE, nil
@@ -98,7 +90,7 @@ func RemoveCrontabEntryByID(id uuid.UUID) error {
 		return err
 	}
 
-	var entriesToKeep []parser.CrontabEntry
+	var entriesToKeep []CrontabEntry
 
 	for _, item := range allEntries {
 		if item.ID == id {
@@ -108,16 +100,44 @@ func RemoveCrontabEntryByID(id uuid.UUID) error {
 		entriesToKeep = append(entriesToKeep, item)
 	}
 
-	err = emptyCrontab()
+	if err = emptyCrontab(); err != nil {
+		return err
+	}
+
+	err = withCrontab(func(f *os.File) error {
+		for _, item := range entriesToKeep {
+			_, err := fmt.Fprintf(f, cronFormat, item.Cron, item.Cmd, item.ID)
+			if err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
+
 	if err != nil {
 		return err
 	}
 
-	for _, item := range entriesToKeep {
-		err = WriteCronToSchedule(item.Cron, item.Cmd, item.ID.String())
-		if err != nil {
-			return err
-		}
+	return nil
+}
+
+func withCrontab(fn func(f *os.File)error) error {
+	file := config.Config.CrontabFile
+	if file == "" {
+		return errCrontabFileNotSet
+	}
+
+	crontab, err := os.OpenFile(file, os.O_APPEND|os.O_CREATE|os.O_RDWR, 0644)
+	if err != nil {
+		return err
+	}
+	defer crontab.Close()
+
+	err = fn(crontab)
+
+	if err != nil {
+		return err
 	}
 
 	return nil
@@ -125,14 +145,14 @@ func RemoveCrontabEntryByID(id uuid.UUID) error {
 
 func emptyCrontab() error {
 	file := config.Config.CrontabFile
-	crontab, err := os.OpenFile(file, os.O_APPEND|os.O_CREATE|os.O_RDWR, 0644)
+	if file == "" {
+		return errCrontabFileNotSet
+	}
+
+	err := os.Truncate(file, 0)
 	if err != nil {
 		return err
 	}
-	err = os.Truncate(file, 0)
-	if err != nil {
-		return err
-	}
-	crontab.Close()
+	
 	return nil
 }

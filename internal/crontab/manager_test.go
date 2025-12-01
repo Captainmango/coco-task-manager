@@ -35,7 +35,7 @@ func (s *CronTabManagerTestSuite) TearDownTest() {
 
 
 func (s *CronTabManagerTestSuite) Test_ItWritesToCrontabFile() {
-	err := WriteCronToSchedule(s.cron, "./test-command", "test")
+	err := WriteCronToSchedule(s.cron, "./test-command", "test-id")
 	if err != nil {
 		s.T().Fatal(err)
 		return

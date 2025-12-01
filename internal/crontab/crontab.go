@@ -1,9 +1,11 @@
-package parser
+package crontab
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/captainmango/coco-cron-parser/internal/data"
+	"github.com/captainmango/coco-cron-parser/internal/parser"
 	"github.com/google/uuid"
 )
 
@@ -24,8 +26,8 @@ func NewCrontabEntryFromString(input string) (CrontabEntry, error) {
 
 	cronPart := parts[0]
 
-	p, err := NewParser(
-		WithInput(cronPart, true),
+	p, err := parser.NewParser(
+		parser.WithInput(cronPart, true),
 	)
 
 	if err != nil {
@@ -53,4 +55,8 @@ func NewCrontabEntryFromString(input string) (CrontabEntry, error) {
 	ctbE.Cmd = moreParts[1]
 
 	return ctbE, nil
+}
+
+func invalidCronTabEntry(input string) error {
+	return fmt.Errorf("%s is not a valid crontab entry", input)
 }
