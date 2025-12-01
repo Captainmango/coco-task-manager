@@ -2,6 +2,10 @@ package coco_http
 
 import "net/http"
 
+func (a *app) handleLivez(w http.ResponseWriter, r *http.Request) {
+	a.writeJSON(w, http.StatusOK, map[string]string{"status": "OK"}, nil)
+}
+
 func (a *app) handleGetScheduledTasks(w http.ResponseWriter, r *http.Request) {
 	entries, err := a.resources.TaskResource.GetAllCrontabEntries()
 
@@ -38,5 +42,18 @@ func (a *app) handleGetScheduledTasks(w http.ResponseWriter, r *http.Request) {
 		),
 	)
 
+	a.writeJSON(w, http.StatusOK, res, nil)
+}
+
+func (a *app) handleGetTasks(w http.ResponseWriter, r *http.Request) {
+	cmds := a.cmdRegistry.Commands
+
+	var out []TaskDto
+	for _, cmd := range cmds {
+		// remap
+		_ = cmd
+	}
+
+	res := NewResponse(WithData(TASK, out))
 	a.writeJSON(w, http.StatusOK, res, nil)
 }

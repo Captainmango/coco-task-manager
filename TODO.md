@@ -10,13 +10,13 @@
     - [x] Read crontabs from file (get all of them and present nicely)
     - [x] Find cron entry by ID (use a hash followed by the ID as my nomenclature)
     - [x] Delete entry from crontab
-  - [ ] Set up CLI registry
-    - [ ] boot registry in main
+  - [x] Set up CLI registry
+    - [x] boot registry in main
     - [ ] Write the commands (urfavcli)
     - [ ] Get all commands and payloads presented nicely
-  - [ ] create the tasks resource
+  - [x] create the tasks resource
     - [ ] Get all tasks that can be scheduled (from registry)
-    - [ ] Get all tasks that are scheduled (from crontab)
+    - [x] Get all tasks that are scheduled (from crontab)
     - [ ] Schedule a task (write to crontab)
     - [ ] Find task by ID (in crontab)
     - [ ] Delete task (from crontab)

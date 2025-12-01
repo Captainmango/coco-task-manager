@@ -8,11 +8,10 @@ import (
 
 func (a *app) apiV1Router(r *chi.Mux) *chi.Mux {
 	r.Route("/api/v1", func(r chi.Router) {
-		r.Get("/livez", func(w http.ResponseWriter, r *http.Request) {
-			a.writeJSON(w, http.StatusOK, map[string]string{"status": "OK"}, nil)
-		})
+		r.Get("/livez", a.handleLivez)
 
 		r.Route("/tasks", func(r chi.Router) {
+			r.Get("/", a.handleGetTasks)
 			r.Get("/scheduled", a.handleGetScheduledTasks)
 
 			r.Post("/", func(w http.ResponseWriter, r *http.Request) {

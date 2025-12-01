@@ -1,12 +1,12 @@
 package commands
 
-var Registry *registry = &registry{}
+var Registry *RegistryContainer = &RegistryContainer{}
 
-type registry struct {
+type RegistryContainer struct {
 	Commands []any // should be a slice of cli.Commands from urfav/cli
 }
 
-func (r *registry) Register(cmd any) {
+func (r *RegistryContainer) Register(cmd any) {
 	r.Commands = append(r.Commands, cmd)
 }
 
