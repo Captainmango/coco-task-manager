@@ -6,10 +6,10 @@
     - [x] RequestID
   - [x] Accept requests on routes specified in e2e tests
   - [x] Write to crontab file
-    - [ ] Label crontabs by ID (use uuidv7)
-    - [ ] Read crontabs from file (get all of them and present nicely)
-    - [ ] Find cron entry by ID (use a hash followed by the ID as my nomenclature)
-    - [ ] Delete entry from crontab
+    - [x] Label crontabs by ID (use uuidv7)
+    - [x] Read crontabs from file (get all of them and present nicely)
+    - [x] Find cron entry by ID (use a hash followed by the ID as my nomenclature)
+    - [x] Delete entry from crontab
   - [ ] Set up CLI registry
     - [ ] boot registry in main
     - [ ] Write the commands (urfavcli)
