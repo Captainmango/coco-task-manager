@@ -10,16 +10,16 @@ import (
 )
 
 type CrontabEntry struct {
-	ID uuid.UUID
+	ID   uuid.UUID
 	Cron data.Cron
-	Cmd string
+	Cmd  string
 }
 
 func NewCrontabEntryFromString(input string) (CrontabEntry, error) {
 	var err error
 	var ctbE CrontabEntry
 	parts := strings.Split(input, " root ")
-	
+
 	if len(parts) != 2 {
 		return ctbE, invalidCronTabEntry(input)
 	}
@@ -45,7 +45,7 @@ func NewCrontabEntryFromString(input string) (CrontabEntry, error) {
 		return ctbE, invalidCronTabEntry(input)
 	}
 
-	uuID, err := uuid.FromBytes([]byte(moreParts[1]))
+	uuID, err := uuid.Parse(moreParts[1])
 	if err != nil {
 		return ctbE, err
 	}

@@ -8,6 +8,7 @@ import (
 	"github.com/captainmango/coco-cron-parser/internal/config"
 	"github.com/captainmango/coco-cron-parser/internal/data"
 	"github.com/captainmango/coco-cron-parser/internal/utils"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 )
@@ -17,6 +18,7 @@ const expectedCrontabFormat = "%s root %s | tee /tmp/log # %s\n"
 type CronTabManagerTestSuite struct {
 	suite.Suite
 	cron data.Cron
+	cM   CrontabHandler
 }
 
 func Test_RunManagerTestSuite(t *testing.T) {
@@ -27,57 +29,122 @@ func (s *CronTabManagerTestSuite) SetupTest() {
 	config.BootstrapConfig()
 	config.Config.CrontabFile = utils.BasePath("e2e/storage/crontab")
 	s.cron = exampleTestCron()
+	s.cM = CrontabManager{}
 }
 
 func (s *CronTabManagerTestSuite) TearDownTest() {
 	resetFileFromPath(s.T(), config.Config.CrontabFile)
 }
 
-
 func (s *CronTabManagerTestSuite) Test_ItWritesToCrontabFile() {
-	err := WriteCronToSchedule(s.cron, "./test-command", "test-id")
-	if err != nil {
-		s.T().Fatal(err)
-		return
-	}
+	fakeUuID, _ := uuid.NewUUID()
+	err := s.cM.WriteCrontabEntries([]CrontabEntry{
+		{
+			ID:   fakeUuID,
+			Cron: s.cron,
+			Cmd:  "./test-command",
+		},
+	})
 
-	expected := fmt.Sprintf(expectedCrontabFormat, s.cron, "./test-command", "test-id")
-	
+	assert.NoError(s.T(), err)
+
+	expected := fmt.Sprintf(expectedCrontabFormat, s.cron, "./test-command", fakeUuID.String())
+
 	out := readFromPath(s.T(), config.Config.CrontabFile)
 
 	assert.Equal(s.T(), expected, out)
 }
 
+func (s *CronTabManagerTestSuite) Test_ItGetsCrontabsInFile() {
+	fakeUuIDOne, _ := uuid.NewUUID()
+	fakeUuIDTwo, _ := uuid.NewUUID()
+	
+
+	err := s.cM.WriteCrontabEntries(fixtureCrontabs(fakeUuIDOne, fakeUuIDTwo))
+
+	assert.NoError(s.T(), err)
+
+	entries, err := s.cM.GetAllCrontabEntries()
+
+	assert.NoError(s.T(), err)
+	assert.Len(s.T(), entries, 2)
+}
+
+func (s *CronTabManagerTestSuite) Test_ItGetsCrontabByID() {
+	fakeUuIDOne, _ := uuid.NewUUID()
+	fakeUuIDTwo, _ := uuid.NewUUID()
+	
+
+	err := s.cM.WriteCrontabEntries(fixtureCrontabs(fakeUuIDOne, fakeUuIDTwo))
+
+	assert.NoError(s.T(), err)
+
+	ctbE, err := s.cM.GetCrontabEntryByID(fakeUuIDTwo)
+
+	assert.NoError(s.T(), err)
+	assert.NotNil(s.T(), ctbE)
+	assert.Equal(s.T(), fakeUuIDTwo, ctbE.ID)
+}
+
+func (s *CronTabManagerTestSuite) Test_ItDeletesCrontabByID() {
+	fakeUuIDOne, _ := uuid.NewUUID()
+	fakeUuIDTwo, _ := uuid.NewUUID()
+	
+	err := s.cM.WriteCrontabEntries(fixtureCrontabs(fakeUuIDOne, fakeUuIDTwo))
+
+	assert.NoError(s.T(), err)
+
+	err = s.cM.RemoveCrontabEntryByID(fakeUuIDTwo)
+
+	assert.NoError(s.T(), err)
+	entries, _ := s.cM.GetAllCrontabEntries()
+	assert.Len(s.T(), entries, 1)
+}
+
 func exampleTestCron() data.Cron {
-	return  data.Cron{
+	return data.Cron{
 		Data: []data.CronFragment{
 			{
-				Expr: "*",
-				Kind: data.WILDCARD,
+				Expr:         "*",
+				Kind:         data.WILDCARD,
 				FragmentType: data.MINUTE,
 			},
-						{
-				Expr: "*",
-				Kind: data.WILDCARD,
+			{
+				Expr:         "*",
+				Kind:         data.WILDCARD,
 				FragmentType: data.MINUTE,
 			},
-						{
-				Expr: "*",
-				Kind: data.WILDCARD,
+			{
+				Expr:         "*",
+				Kind:         data.WILDCARD,
 				FragmentType: data.MINUTE,
 			},
-						{
-				Expr: "*",
-				Kind: data.WILDCARD,
+			{
+				Expr:         "*",
+				Kind:         data.WILDCARD,
 				FragmentType: data.MINUTE,
 			},
-						{
-				Expr: "*",
-				Kind: data.WILDCARD,
+			{
+				Expr:         "*",
+				Kind:         data.WILDCARD,
 				FragmentType: data.MINUTE,
 			},
 		},
 	}
+}
+
+func fixtureCrontabs(uuids... uuid.UUID) []CrontabEntry {
+	var out []CrontabEntry
+
+	for _, item := range uuids {
+		out = append(out, CrontabEntry{
+			ID:   item,
+			Cron: exampleTestCron(),
+			Cmd:  "./test-command",
+		})
+	}
+
+	return out
 }
 
 func readFromPath(t *testing.T, path string) string {
@@ -94,8 +161,8 @@ func resetFileFromPath(t *testing.T, path string) {
 	t.Helper()
 
 	err := os.Truncate(path, 0)
-    if err != nil {
-        t.Fatalf("truncate failed: %v", err)
+	if err != nil {
+		t.Fatalf("truncate failed: %v", err)
 		return
-    }
+	}
 }
