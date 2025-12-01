@@ -108,20 +108,17 @@ func NewResponse[T any](opts ...ResponseOptFn[T]) *Response[T] {
 	return r
 }
 
-func WithType[T any](t string) ResponseOptFn[T] {
+func WithData[T any](typeParam string, data T) ResponseOptFn[T] {
 	return func(o *Response[T]) {
-		o.Type = t
+		o.Type = typeParam
+		o.Data = data
 	}
 }
 
-func WithData[T any](d T) ResponseOptFn[T] {
+func WithError[T any](e error, data T) ResponseOptFn[T] {
 	return func(o *Response[T]) {
-		o.Data = d
-	}
-}
-
-func WithError[T any](e error) ResponseOptFn[T] {
-	return func(o *Response[T]) {
+		o.Type = "error"
+		o.Data = data
 		o.Error = e
 	}
 }

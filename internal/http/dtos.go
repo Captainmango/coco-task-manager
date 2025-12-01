@@ -2,7 +2,11 @@ package coco_http
 
 import "github.com/google/uuid"
 
-type TaskDto struct {
+const (
+	TASK = "task" // refers to the type the client will receive
+)
+
+type ScheduledTaskDto struct {
 	ID      uuid.UUID `json:"id"`
 	Command string    `json:"command"`
 	Cron    string    `json:"cron"`

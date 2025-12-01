@@ -4,7 +4,7 @@ HTTP 200
 [Asserts]
 jsonpath "$.status" == "OK"
 
-GET {{ host }}/api/v1/tasks
+GET {{ host }}/api/v1/tasks/scheduled
 Content-Type: application/json
 HTTP 200
 [Asserts]

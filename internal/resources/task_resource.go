@@ -22,7 +22,7 @@ func CreateTaskResource(
 func (t TaskResource) GetAllCrontabEntries() ([]crontab.CrontabEntry, error) {
 	entries, err := t.crontabManager.GetAllCrontabEntries()
 
-	slog.Info("retrieved entries from cron file", 
+	slog.Info("retrieved entries from cron file",
 		slog.String("file_location", config.Config.CrontabFile),
 	)
 
