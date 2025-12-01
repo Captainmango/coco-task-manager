@@ -8,7 +8,11 @@ func (a *app) handleGetScheduledTasks(w http.ResponseWriter, r *http.Request) {
 	// Check what the error is at some point
 	if err != nil {
 		errRes := NewResponse(
-			WithError(err, []ScheduledTaskDto{}),
+			WithError(
+				err,
+				[]ScheduledTaskDto{},
+				tMeta{"hello": "world"},
+			),
 		)
 
 		a.writeJSON(w, http.StatusBadRequest, errRes, nil)
@@ -28,7 +32,10 @@ func (a *app) handleGetScheduledTasks(w http.ResponseWriter, r *http.Request) {
 	}
 
 	res := NewResponse(
-		WithData(TASK, out),
+		WithData(
+			SCHEDULED_TASK,
+			out,
+		),
 	)
 
 	a.writeJSON(w, http.StatusOK, res, nil)

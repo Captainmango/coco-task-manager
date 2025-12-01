@@ -3,7 +3,7 @@ package coco_http
 import "github.com/google/uuid"
 
 const (
-	TASK = "task" // refers to the type the client will receive
+	SCHEDULED_TASK = "scheduled_task" // refers to the type the client will receive
 )
 
 type ScheduledTaskDto struct {

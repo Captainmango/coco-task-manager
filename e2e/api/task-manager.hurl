@@ -8,7 +8,7 @@ GET {{ host }}/api/v1/tasks/scheduled
 Content-Type: application/json
 HTTP 200
 [Asserts]
-jsonpath "$.type" == "task"
+jsonpath "$.type" == "scheduled_task"
 jsonpath "$.data" count == 0
 
 POST {{ host }}/api/v1/tasks
@@ -21,6 +21,11 @@ Content-Type: application/json
     }
 }
 HTTP 201
+""
+
+DELETE {{ host }}/api/v1/tasks # get the val from previous
+Content-Type: application/json
+HTTP 204
 ""
 
 POST {{ host }}/api/v1/tasks

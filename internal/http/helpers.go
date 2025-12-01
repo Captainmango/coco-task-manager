@@ -89,11 +89,12 @@ func (a *app) readJSON(w http.ResponseWriter, r *http.Request, dst any) error {
 	return nil
 }
 
+type tMeta map[string]any
 type Response[T any] struct {
-	Type  string         `json:"type"`
-	Data  T              `json:"data"`
-	Error error          `json:"error"`
-	Meta  map[string]any `json:"meta"`
+	Type  string `json:"type"`
+	Data  T      `json:"data"`
+	Error error  `json:"error"`
+	Meta  tMeta   `json:"meta"`
 }
 
 type ResponseOptFn[T any] func(r *Response[T])
@@ -108,23 +109,25 @@ func NewResponse[T any](opts ...ResponseOptFn[T]) *Response[T] {
 	return r
 }
 
-func WithData[T any](typeParam string, data T) ResponseOptFn[T] {
+func WithData[T any](typeParam string, data T, meta... tMeta) ResponseOptFn[T] {
 	return func(o *Response[T]) {
 		o.Type = typeParam
 		o.Data = data
+
+		for _, m := range meta {
+			maps.Copy(o.Meta, m)
+		}
 	}
 }
 
-func WithError[T any](e error, data T) ResponseOptFn[T] {
+func WithError[T any](e error, data T, meta... tMeta) ResponseOptFn[T] {
 	return func(o *Response[T]) {
 		o.Type = "error"
 		o.Data = data
 		o.Error = e
-	}
-}
 
-func WithMeta[T any](m map[string]any) ResponseOptFn[T] {
-	return func(o *Response[T]) {
-		o.Meta = m
+		for _, m := range meta {
+			maps.Copy(o.Meta, m)
+		}
 	}
 }
