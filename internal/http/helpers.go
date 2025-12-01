@@ -88,3 +88,32 @@ func (a *app) readJSON(w http.ResponseWriter, r *http.Request, dst any) error {
 
 	return nil
 }
+
+type Response[T any] struct {
+	Type string `json:"type"`
+	Data T      `json:"data"`
+}
+
+type ResponseOptFn[T any] func(r *Response[T])
+
+func NewResponse[T any](opts ...ResponseOptFn[T]) *Response[T] {
+	r := &Response[T]{}
+
+	for _, fn := range opts {
+		fn(r)
+	}
+
+	return r
+}
+
+func WithType[T any](t string) ResponseOptFn[T] {
+	return func(o *Response[T]) {
+		o.Type = t
+	}
+}
+
+func WithData[T any](d T) ResponseOptFn[T] {
+	return func(o *Response[T]) {
+		o.Data = d
+	}
+}

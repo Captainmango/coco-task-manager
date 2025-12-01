@@ -1,25 +1,31 @@
 package coco_http
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/google/uuid"
 )
 
 func (a *app) apiV1Router(r *chi.Mux) *chi.Mux {
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Get("/livez", func(w http.ResponseWriter, r *http.Request) {
-			res := NewGetTasksResponse([]TaskDto{})
+			res := NewResponse(
+				WithType[[]TaskDto]("task"),
+				WithData([]TaskDto{
+					{
+						ID: uuid.NullUUID{}.UUID,
+						Command: "test",
+					},
+				}),
+			)
 
-			fmt.Fprintf(w, "hello world with %s", res.Type)
+			a.writeJSON(w, http.StatusOK, res, nil)
 		})
 
 		r.Route("/tasks", func(r chi.Router) {
 			r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-				res := NewGetTasksResponse([]TaskDto{})
 
-				fmt.Fprintf(w, "hello world with %s", res.Type)
 			})
 
 			r.Post("/", func(w http.ResponseWriter, r *http.Request) {
