@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/captainmango/coco-cron-parser/internal/config"
-	"github.com/captainmango/coco-cron-parser/internal/data"
+	"github.com/captainmango/coco-cron-parser/internal/parser"
 	"github.com/captainmango/coco-cron-parser/internal/utils"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -17,7 +17,7 @@ const expectedCrontabFormat = "%s root %s | tee /tmp/log # %s\n"
 
 type CronTabManagerTestSuite struct {
 	suite.Suite
-	cron data.Cron
+	cron parser.Cron
 	cM   CrontabHandler
 }
 
@@ -101,33 +101,33 @@ func (s *CronTabManagerTestSuite) Test_ItDeletesCrontabByID() {
 	assert.Len(s.T(), entries, 1)
 }
 
-func exampleTestCron() data.Cron {
-	return data.Cron{
-		Data: []data.CronFragment{
+func exampleTestCron() parser.Cron {
+	return parser.Cron{
+		Data: []parser.CronFragment{
 			{
 				Expr:         "*",
-				Kind:         data.WILDCARD,
-				FragmentType: data.MINUTE,
+				Kind:         parser.WILDCARD,
+				FragmentType: parser.MINUTE,
 			},
 			{
 				Expr:         "*",
-				Kind:         data.WILDCARD,
-				FragmentType: data.MINUTE,
+				Kind:         parser.WILDCARD,
+				FragmentType: parser.MINUTE,
 			},
 			{
 				Expr:         "*",
-				Kind:         data.WILDCARD,
-				FragmentType: data.MINUTE,
+				Kind:         parser.WILDCARD,
+				FragmentType: parser.MINUTE,
 			},
 			{
 				Expr:         "*",
-				Kind:         data.WILDCARD,
-				FragmentType: data.MINUTE,
+				Kind:         parser.WILDCARD,
+				FragmentType: parser.MINUTE,
 			},
 			{
 				Expr:         "*",
-				Kind:         data.WILDCARD,
-				FragmentType: data.MINUTE,
+				Kind:         parser.WILDCARD,
+				FragmentType: parser.MINUTE,
 			},
 		},
 	}

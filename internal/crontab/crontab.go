@@ -4,14 +4,13 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/captainmango/coco-cron-parser/internal/data"
 	"github.com/captainmango/coco-cron-parser/internal/parser"
 	"github.com/google/uuid"
 )
 
 type CrontabEntry struct {
 	ID   uuid.UUID
-	Cron data.Cron
+	Cron parser.Cron
 	Cmd  string
 }
 

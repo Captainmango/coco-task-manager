@@ -5,13 +5,11 @@ import (
 	"strconv"
 	"strings"
 	"unicode"
-
-	d "github.com/captainmango/coco-cron-parser/internal/data"
 )
 
 var (
-	WILDCARD        = '*'
-	DIVISOR         = '/'
+	ASTERISK        = '*'
+	FORWARD_SLASH   = '/'
 	COMMA           = ','
 	DASH            = '-'
 	END_OF_FRAGMENT = ' '
@@ -22,11 +20,11 @@ type Parser struct {
 	input              string
 	currPos            uint8
 	peekPos            uint8
-	output             d.Cron
+	output             Cron
 	exprBuilder        strings.Builder
 	err                error
 	inputLength        uint8
-	nextFragmentIterFn func() (d.CronFragmentType, bool)
+	nextFragmentIterFn func() (CronFragmentType, bool)
 	stopFragmentIterFn func()
 }
 
@@ -72,24 +70,24 @@ func NewParser(opts ...ParserOption) (*Parser, error) {
 	return &p, nil
 }
 
-func (p *Parser) Parse() (d.Cron, error) {
+func (p *Parser) Parse() (Cron, error) {
 	for p.currPos < p.inputLength {
-		var cf d.CronFragment
+		var cf CronFragment
 
 		currRune := p.getCurrentToken()
 		switch {
-		case currRune == WILDCARD:
+		case currRune == ASTERISK:
 			cf, p.err = p.handleWildCard()
 		case unicode.IsDigit(currRune):
 			cf, p.err = p.handleDigit()
 		case unicode.IsSpace(currRune):
 			peekToken := p.peekNext()
 			if unicode.IsSpace(peekToken) {
-				return d.Cron{}, ErrTooManySpaces(p.input, p.peekPos)
+				return Cron{}, ErrTooManySpaces(p.input, p.peekPos)
 			}
 
 			if unicode.IsLetter(peekToken) {
-				return d.Cron{}, ErrMalformedCron(p.input, p.peekPos)
+				return Cron{}, ErrMalformedCron(p.input, p.peekPos)
 			}
 
 			p.advance()
@@ -101,7 +99,7 @@ func (p *Parser) Parse() (d.Cron, error) {
 		cf.FragmentType, p.err = p.getCurrentFragmentType()
 
 		if p.err != nil {
-			return d.Cron{}, p.err
+			return Cron{}, p.err
 		}
 
 		p.output.Data = append(p.output.Data, cf)
@@ -137,8 +135,8 @@ func structureInputForParser(input any, shouldValidateLength bool) (string, erro
 	return "", ErrInvalidInput(input)
 }
 
-func (p *Parser) handleDigit() (d.CronFragment, error) {
-	var cf d.CronFragment
+func (p *Parser) handleDigit() (CronFragment, error) {
+	var cf CronFragment
 	var err error
 
 	num := p.readNumber()
@@ -159,7 +157,7 @@ func (p *Parser) handleDigit() (d.CronFragment, error) {
 			switch {
 			case nextRune == END_OF_FRAGMENT,
 				nextRune == END_OF_CRON:
-				cf, p.err = d.NewListFragment(p.exprBuilder.String(), nums)
+				cf, p.err = NewListFragment(p.exprBuilder.String(), nums)
 				done = true
 			case unicode.IsDigit(nextRune):
 				num = p.readNumber()
@@ -180,9 +178,9 @@ func (p *Parser) handleDigit() (d.CronFragment, error) {
 		num2 := p.readNumber()
 		nums = append(nums, num2)
 		p.exprBuilder.WriteString(fmt.Sprintf("%d", num2))
-		cf, _ = d.NewRangeFragment(p.exprBuilder.String(), nums)
+		cf, _ = NewRangeFragment(p.exprBuilder.String(), nums)
 	case END_OF_FRAGMENT, END_OF_CRON:
-		cf, _ = d.NewSingleFragment(p.exprBuilder.String(), nums)
+		cf, _ = NewSingleFragment(p.exprBuilder.String(), nums)
 	default:
 		err = ErrMalformedCron(p.input, p.peekPos)
 	}
@@ -190,8 +188,8 @@ func (p *Parser) handleDigit() (d.CronFragment, error) {
 	return cf, err
 }
 
-func (p *Parser) handleWildCard() (d.CronFragment, error) {
-	var cf d.CronFragment
+func (p *Parser) handleWildCard() (CronFragment, error) {
+	var cf CronFragment
 	var err error
 
 	currRune := p.getCurrentToken()
@@ -201,8 +199,8 @@ func (p *Parser) handleWildCard() (d.CronFragment, error) {
 	switch nextRune {
 	case END_OF_FRAGMENT, END_OF_CRON:
 		p.exprBuilder.WriteRune(currRune)
-		cf, err = d.NewWildCardFragment("*")
-	case DIVISOR:
+		cf, err = NewWildCardFragment("*")
+	case FORWARD_SLASH:
 		p.exprBuilder.Write([]byte{byte(currRune), byte(nextRune)})
 
 		p.advance()
@@ -211,7 +209,7 @@ func (p *Parser) handleWildCard() (d.CronFragment, error) {
 		if unicode.IsDigit(nextRune) {
 			num := p.readNumber()
 			p.exprBuilder.WriteString(fmt.Sprintf("%d", num))
-			cf, err = d.NewDivisorFragment(p.exprBuilder.String(), []uint8{num})
+			cf, err = NewDivisorFragment(p.exprBuilder.String(), []uint8{num})
 		}
 	default:
 		err = ErrMalformedCron(p.input, p.peekPos)
@@ -258,7 +256,7 @@ func (p *Parser) readNumber() uint8 {
 	return uint8(num)
 }
 
-func (p *Parser) getCurrentFragmentType() (d.CronFragmentType, error) {
+func (p *Parser) getCurrentFragmentType() (CronFragmentType, error) {
 	cType, ok := p.nextFragmentIterFn()
 
 	if !ok {
@@ -267,4 +265,3 @@ func (p *Parser) getCurrentFragmentType() (d.CronFragmentType, error) {
 
 	return cType, nil
 }
-
