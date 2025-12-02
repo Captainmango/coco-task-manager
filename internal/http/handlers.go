@@ -46,7 +46,7 @@ func (a *app) handleGetScheduledTasks(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *app) handleGetTasks(w http.ResponseWriter, r *http.Request) {
-	cmds := a.cmdRegistry.Commands
+	cmds := a.resources.TaskResource.GetAllAvailableCommands()
 
 	var out []TaskDto
 	for _, cmd := range cmds {
@@ -56,4 +56,9 @@ func (a *app) handleGetTasks(w http.ResponseWriter, r *http.Request) {
 
 	res := NewResponse(WithData(TASK, out))
 	a.writeJSON(w, http.StatusOK, res, nil)
+}
+
+func (a *app) handleScheduleTask(w http.ResponseWriter, r *http.Request) {
+	// need to get the payload and serialise into a struct then validate before passing to the service layer
+	a.resources.TaskResource.ScheduleTask()
 }

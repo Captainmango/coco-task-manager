@@ -87,7 +87,7 @@ func (cM CrontabManager) GetCrontabEntryByID(id uuid.UUID) (CrontabEntry, error)
 	}
 
 	if ctbE.ID == uuid.Nil {
-		return ctbE, fmt.Errorf("did not fine ctbE with ID of %s", id)
+		return ctbE, fmt.Errorf("did not find ctbE with ID of %s", id)
 	}
 
 	return ctbE, nil
