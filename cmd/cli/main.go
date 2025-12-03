@@ -1,25 +1,20 @@
 package main
 
 import (
-	"fmt"
+	"context"
+	"log"
+	"os"
 
 	"github.com/captainmango/coco-cron-parser/internal/commands"
+	"github.com/urfave/cli/v3"
 )
 
 func main() {
-	fmt.Println(commands.Registry.Commands...)
-	// cronArgs := strings.Join(os.Args[1:], " ")
+	cmd := &cli.Command{
+		Commands: commands.Registry.All(),
+	}
 
-	// p, err := parser.NewParser(
-	// 	parser.WithInput(cronArgs, true),
-	// )
-
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	return
-	// }
-
-	// cron, _ := p.Parse()
-	// cron.PrintingMode = data.RAW_EXPRESSION
-	// fmt.Printf("%s\n", cron)
+	if err := cmd.Run(context.Background(), os.Args); err != nil {
+        log.Fatal(err)
+    }
 }

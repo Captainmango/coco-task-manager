@@ -1,17 +1,19 @@
 package commands
 
+import "github.com/urfave/cli/v3"
+
 var Registry *RegistryContainer = &RegistryContainer{}
 
 type CommandFinder interface {
 	Find(string) (any, error)
-	All() []any
+	All() []*cli.Command
 }
 
 type RegistryContainer struct {
-	Commands []any // should be a slice of cli.Commands from urfav/cli
+	Commands []*cli.Command // should be a slice of cli.Commands from urfav/cli
 }
 
-func (r *RegistryContainer) Register(cmd any) {
+func (r *RegistryContainer) Register(cmd *cli.Command) {
 	r.Commands = append(r.Commands, cmd)
 }
 
@@ -19,7 +21,7 @@ func (r *RegistryContainer) Find(key string) (any, error) {
 	var c any
 
 	for _, cmd := range r.Commands {
-		if cmd == key {
+		if cmd.Name == key {
 			c = cmd
 		}
 	}
@@ -27,6 +29,6 @@ func (r *RegistryContainer) Find(key string) (any, error) {
 	return c, nil
 }
 
-func (r *RegistryContainer) All() []any {
+func (r *RegistryContainer) All() []*cli.Command {
 	return r.Commands
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/captainmango/coco-cron-parser/internal/config"
 	"github.com/captainmango/coco-cron-parser/internal/crontab"
 	"github.com/google/uuid"
+	"github.com/urfave/cli/v3"
 )
 
 type TaskResource struct {
@@ -38,7 +39,7 @@ func (t TaskResource) GetAllCrontabEntries() ([]crontab.CrontabEntry, error) {
 	return entries, nil
 }
 
-func (t TaskResource) GetAllAvailableCommands() []any {
+func (t TaskResource) GetAllAvailableCommands() []*cli.Command {
 	return t.commandRegistry.All()
 }
 
