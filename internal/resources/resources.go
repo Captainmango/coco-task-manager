@@ -1,7 +1,7 @@
 package resources
 
 import (
-	"github.com/captainmango/coco-cron-parser/internal/commands"
+	coco_cli "github.com/captainmango/coco-cron-parser/internal/cli"
 	"github.com/captainmango/coco-cron-parser/internal/crontab"
 )
 
@@ -13,7 +13,7 @@ func CreateResources() Resources {
 	return Resources{
 		CreateTaskResource(
 			crontab.CrontabManager{},
-			commands.Registry,
-		), // Maybe need to DI this for int testing?
+			coco_cli.Registry,
+		),
 	}
 }

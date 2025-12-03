@@ -1,4 +1,4 @@
-package commands
+package coco_cli
 
 import "github.com/urfave/cli/v3"
 
