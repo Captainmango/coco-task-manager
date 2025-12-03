@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"log/slog"
 
 	coco_cli "github.com/captainmango/coco-cron-parser/internal/cli"
 	"github.com/urfave/cli/v3"
@@ -36,6 +37,7 @@ func createScheduleCronCommand(tR TaskResource) *cli.Command {
 		},
 		Action: func(ctx context.Context, c *cli.Command) error {
 			tR.ScheduleTask()
+			slog.Info("do a thing")
 			return nil
 		},
 	}
