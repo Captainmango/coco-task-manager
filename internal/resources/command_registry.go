@@ -1,8 +1,8 @@
-package coco_cli
+package resources
 
 import "github.com/urfave/cli/v3"
 
-var Registry *RegistryContainer = &RegistryContainer{}
+var CommandRegistry *RegistryContainer = &RegistryContainer{}
 
 type CommandFinder interface {
 	Find(string) (any, error)

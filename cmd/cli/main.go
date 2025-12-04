@@ -5,15 +5,11 @@ import (
 	"log"
 	"os"
 
-	_ "github.com/captainmango/coco-cron-parser/internal/resources"
-	"github.com/captainmango/coco-cron-parser/internal/cli"
-	"github.com/urfave/cli/v3"
+	coco_cli "github.com/captainmango/coco-cron-parser/internal/cli"
 )
 
 func main() {
-	cmd := &cli.Command{
-		Commands: coco_cli.Registry.All(),
-	}
+	cmd := coco_cli.CreateCLI()
 
 	if err := cmd.Run(context.Background(), os.Args); err != nil {
         log.Fatal(err)

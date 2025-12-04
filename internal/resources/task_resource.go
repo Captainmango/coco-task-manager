@@ -3,7 +3,6 @@ package resources
 import (
 	"log/slog"
 
-	coco_cli "github.com/captainmango/coco-cron-parser/internal/cli"
 	"github.com/captainmango/coco-cron-parser/internal/config"
 	"github.com/captainmango/coco-cron-parser/internal/crontab"
 	"github.com/google/uuid"
@@ -12,12 +11,12 @@ import (
 
 type TaskResource struct {
 	crontabManager crontab.CrontabHandler
-	commandRegistry coco_cli.CommandFinder
+	commandRegistry CommandFinder
 }
 
 func CreateTaskResource(
 	ctbeManager crontab.CrontabHandler,
-	cmdRegistry coco_cli.CommandFinder,
+	cmdRegistry CommandFinder,
 ) TaskResource {
 	return TaskResource{
 		crontabManager: ctbeManager,
