@@ -5,6 +5,7 @@ import (
 
 	"github.com/captainmango/coco-cron-parser/internal/config"
 	"github.com/captainmango/coco-cron-parser/internal/crontab"
+	"github.com/captainmango/coco-cron-parser/internal/parser"
 	"github.com/google/uuid"
 	"github.com/urfave/cli/v3"
 )
@@ -42,7 +43,34 @@ func (t TaskResource) GetAllAvailableCommands() []*cli.Command {
 	return t.commandRegistry.All()
 }
 
-func (t TaskResource) ScheduleTask() error {
+func (t TaskResource) ScheduleTask(cron, task string) error {
+	p, err := parser.NewParser(parser.WithInput(cron, true))
+
+	if err != nil {
+		return err
+	}
+
+	parsedExpr, err := p.Parse()
+	if err != nil {
+		return err
+	}
+
+	id, err := uuid.NewV7()
+
+	if err != nil {
+		return err
+	}
+
+	ctbEntry := crontab.CrontabEntry{
+		ID: id,
+		Cron: parsedExpr,
+		Cmd: task,
+	}
+
+	if err = t.crontabManager.WriteCrontabEntries([]crontab.CrontabEntry{ctbEntry}); err != nil {
+		return err
+	}
+
 	return nil
 }
 

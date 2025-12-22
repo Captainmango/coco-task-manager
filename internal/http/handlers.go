@@ -60,5 +60,5 @@ func (a *app) handleGetTasks(w http.ResponseWriter, r *http.Request) {
 
 func (a *app) handleScheduleTask(w http.ResponseWriter, r *http.Request) {
 	// need to get the payload and serialise into a struct then validate before passing to the service layer
-	a.resources.TaskResource.ScheduleTask()
+	a.resources.TaskResource.ScheduleTask("", "")
 }
