@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/captainmango/coco-cron-parser/internal/commands"
 	"github.com/captainmango/coco-cron-parser/internal/config"
 	"github.com/captainmango/coco-cron-parser/internal/resources"
 	"github.com/go-chi/chi/v5"
@@ -15,6 +16,7 @@ type (
 	app struct {
 		logger *slog.Logger
 		resources resources.Resources
+		commandsRegistry commands.CommandFinder
 	}
 )
 
@@ -29,6 +31,7 @@ func CreateApp() *http.Server {
 	a := &app{
 		logger: logger,
 		resources: resources.CreateResources(),
+		commandsRegistry: commands.Registry,
 	}
 
 	r := chi.NewRouter()

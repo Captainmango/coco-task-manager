@@ -1,6 +1,8 @@
 package coco_http
 
-import "net/http"
+import (
+	"net/http"
+)
 
 func (a *app) handleLivez(w http.ResponseWriter, r *http.Request) {
 	a.writeJSON(w, http.StatusOK, map[string]string{"status": "OK"}, nil)
@@ -46,7 +48,7 @@ func (a *app) handleGetScheduledTasks(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *app) handleGetTasks(w http.ResponseWriter, r *http.Request) {
-	cmds := a.resources.TaskResource.GetAllAvailableCommands()
+	cmds := a.commandsRegistry.All()
 
 	var out []TaskDto
 	for _, cmd := range cmds {

@@ -7,21 +7,17 @@ import (
 	"github.com/captainmango/coco-cron-parser/internal/crontab"
 	"github.com/captainmango/coco-cron-parser/internal/parser"
 	"github.com/google/uuid"
-	"github.com/urfave/cli/v3"
 )
 
 type TaskResource struct {
 	crontabManager crontab.CrontabHandler
-	commandRegistry CommandFinder
 }
 
 func CreateTaskResource(
 	ctbeManager crontab.CrontabHandler,
-	cmdRegistry CommandFinder,
 ) TaskResource {
 	return TaskResource{
 		crontabManager: ctbeManager,
-		commandRegistry: cmdRegistry,
 	}
 }
 
@@ -37,10 +33,6 @@ func (t TaskResource) GetAllCrontabEntries() ([]crontab.CrontabEntry, error) {
 	}
 
 	return entries, nil
-}
-
-func (t TaskResource) GetAllAvailableCommands() []*cli.Command {
-	return t.commandRegistry.All()
 }
 
 func (t TaskResource) ScheduleTask(cron, task string) error {

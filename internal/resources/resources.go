@@ -12,7 +12,6 @@ func CreateResources() Resources {
 	return Resources{
 		CreateTaskResource(
 			crontab.CrontabManager{},
-			CommandRegistry,
-		),
+		), // Maybe need to DI this for int testing?
 	}
 }

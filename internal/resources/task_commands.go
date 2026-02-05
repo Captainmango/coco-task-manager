@@ -2,7 +2,6 @@ package resources
 
 import (
 	"context"
-	"log/slog"
 
 	"github.com/urfave/cli/v3"
 )
@@ -35,8 +34,8 @@ func createScheduleCronCommand(tR TaskResource) *cli.Command {
 			},
 		},
 		Action: func(ctx context.Context, c *cli.Command) error {
-			cmds:= tR.GetAllAvailableCommands()
-			slog.Info("do a thing", slog.String("cmd_name", cmds[0].Name))
+			// cmds := []string{}
+			// slog.Info("do a thing", slog.String("cmd_name", cmds[0].Name))
 			return nil
 		},
 	}
