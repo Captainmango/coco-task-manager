@@ -1,6 +1,6 @@
 ## Todo list
 
-- [ ] Set up API
+- [x] Set up API
   - [x] Set up middleware
     - [x] Logging
     - [x] RequestID
@@ -12,14 +12,14 @@
     - [x] Delete entry from crontab
   - [x] Set up CLI registry
     - [x] boot registry in main
-    - [ ] Write the commands (urfavcli)
-    - [ ] Get all commands and payloads presented nicely
+    - [x] Write the commands (urfavcli)
+    - [x] Get all commands and payloads presented nicely
   - [x] create the tasks resource
-    - [ ] Get all tasks that can be scheduled (from registry)
+    - [x] Get all tasks that can be scheduled (from registry)
     - [x] Get all tasks that are scheduled (from crontab)
-    - [ ] Schedule a task (write to crontab)
-    - [ ] Find task by ID (in crontab)
-    - [ ] Delete task (from crontab)
+    - [x] Schedule a task (write to crontab)
+    - [x] Find task by ID (in crontab)
+    - [x] Delete task (from crontab)
 - [ ] Set up publisher
   - [ ] Set up RabbitMQ
     - [ ] Docker compose?
