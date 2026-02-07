@@ -12,6 +12,7 @@ func (a *app) apiV1Router(r *chi.Mux) *chi.Mux {
 			r.Get("/", a.handleGetTasks)
 			r.Get("/scheduled", a.handleGetScheduledTasks)
 			r.Post("/", a.handleScheduleTask)
+			r.Delete("/{uuid}", a.handleRemoveTask)
 		})
 	})
 

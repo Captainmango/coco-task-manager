@@ -1,7 +1,13 @@
 package coco_http
 
 import (
+	"fmt"
 	"net/http"
+	"slices"
+	"strings"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/google/uuid"
 )
 
 func (a *app) handleLivez(w http.ResponseWriter, r *http.Request) {
@@ -11,7 +17,6 @@ func (a *app) handleLivez(w http.ResponseWriter, r *http.Request) {
 func (a *app) handleGetScheduledTasks(w http.ResponseWriter, r *http.Request) {
 	entries, err := a.resources.TaskResource.GetAllCrontabEntries()
 
-	// Check what the error is at some point
 	if err != nil {
 		errRes := NewResponse(
 			WithError(
@@ -52,8 +57,12 @@ func (a *app) handleGetTasks(w http.ResponseWriter, r *http.Request) {
 
 	var out []TaskDto
 	for _, cmd := range cmds {
-		// remap
-		_ = cmd
+		tOut := TaskDto{
+			Slug: cmd.Name,
+			Args: slices.Concat(cmd.Args().Slice()),
+		}
+
+		out = append(out, tOut)
 	}
 
 	res := NewResponse(WithData(TASK, out))
@@ -61,6 +70,54 @@ func (a *app) handleGetTasks(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *app) handleScheduleTask(w http.ResponseWriter, r *http.Request) {
-	// need to get the payload and serialise into a struct then validate before passing to the service layer
-	a.resources.TaskResource.ScheduleTask("", "")
+	var input struct {
+		TaskId        string `json:"task_id"`
+		ScheduledTime string `json:"scheduled_time"`
+		Args          struct {
+			RoomId string `json:"room_id"`
+		} `json:"args"`
+	}
+
+	err := a.readJSON(w, r, &input)
+	if err != nil {
+		res := NewResponse(WithError(err, ScheduledTaskDto{}))
+		a.writeJSON(w, http.StatusInternalServerError, res, nil)
+		return
+	}
+
+	cmd, err := a.commandsRegistry.Find(input.TaskId)
+	if err != nil {
+		res := NewResponse(WithError(err, ScheduledTaskDto{}))
+		a.writeJSON(w, http.StatusUnprocessableEntity, res, nil)
+		return
+	}
+
+	var cmdStringBuilder strings.Builder
+	cmdStringBuilder.WriteString(fmt.Sprintf("%s ", cmd.Name))
+	cmdStringBuilder.WriteString(fmt.Sprintf("%s", input.Args.RoomId))
+
+	err = a.resources.TaskResource.ScheduleTask(input.ScheduledTime, cmdStringBuilder.String())
+	if err != nil {
+		res := NewResponse(WithError(err, ScheduledTaskDto{}))
+		a.writeJSON(w, http.StatusUnprocessableEntity, res, nil)
+		return
+	}
+
+	res := NewResponse(WithData(SCHEDULED_TASK, ""))
+
+	a.writeJSON(w, http.StatusAccepted, res, nil)
+}
+
+func (a *app) handleRemoveTask(w http.ResponseWriter, r *http.Request) {
+	taskUUID := chi.URLParam(r, "uuid")
+
+	taskId, err := uuid.Parse(taskUUID)
+	if err != nil {
+		res := NewResponse(WithError(err, ""))
+		a.writeJSON(w, http.StatusInternalServerError, res, nil)
+		return
+	}
+
+	a.resources.TaskResource.RemoveTaskByID(taskId)
+	a.writeJSON(w, http.StatusNoContent, "", nil)
 }

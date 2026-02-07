@@ -51,7 +51,7 @@ func NewCrontabEntryFromString(input string) (CrontabEntry, error) {
 
 	ctbE.Cron = cron
 	ctbE.ID = uuID
-	ctbE.Cmd = moreParts[1]
+	ctbE.Cmd = moreParts[0]
 
 	return ctbE, nil
 }
