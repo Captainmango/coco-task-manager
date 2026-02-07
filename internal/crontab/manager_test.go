@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-const expectedCrontabFormat = "%s root %s | tee /tmp/log # %s\n"
+const expectedCrontabFormat = cronFormat
 
 type CronTabManagerTestSuite struct {
 	suite.Suite

@@ -18,7 +18,7 @@ func createStartGameCommand(tR TaskResource) *cli.Command {
 		},
 		Action: func(ctx context.Context, c *cli.Command) error {
 			_ = tR
-			// The thing that will post to rabbitmq
+			slog.Info("testing this out", slog.String("room_id", c.StringArg("room_id")))
 			return nil
 		},
 	}

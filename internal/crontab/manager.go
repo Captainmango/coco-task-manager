@@ -11,7 +11,7 @@ import (
 	"github.com/google/uuid"
 )
 
-const cronFormat = "%s root %s | tee /tmp/log # %s\n"
+const cronFormat = "%s root /app/%s 2>&1 | tee -a /tmp/log # %s\n"
 
 var (
 	errCrontabFileNotSet = errors.New("crontab file not set")
