@@ -12,3 +12,15 @@ tasks:
     cmds:
       - docker build -t {{.IMAGE_TAG}}:latest -f {{.IMAGE_PATH}} .
     silent: true
+
+  start-shell:
+    desc: Start a container and shell session inside it
+    cmds:
+      - docker run -it {{.IMAGE_TAG}} sh
+    silent: true
+  
+  push-image:
+    desc: Push image to registry
+    cmds: 
+      - echo 'pushing image to GitHub'
+    silent: true
