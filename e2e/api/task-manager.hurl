@@ -14,7 +14,7 @@ jsonpath "$.data" count == 0
 POST {{ host }}/api/v1/tasks
 Content-Type: application/json
 {
-    "task_id": "schedule-task",
+    "task_id": "start-game",
     "scheduled_time": "* * * * *",
     "args": {
         "room_id": "1"
@@ -23,7 +23,7 @@ Content-Type: application/json
 HTTP 202
 [Asserts]
 jsonpath "$.type" == "scheduled_task"
-jsonpath "$.data.command" == "cli schedule-task 1"
+jsonpath "$.data.command" == "cli start-game 1"
 jsonpath "$.data.cron" == "* * * * *"
 [Captures]
 taskUuid: jsonpath "$.data.id"
@@ -36,7 +36,7 @@ HTTP 204
 POST {{ host }}/api/v1/tasks
 Content-Type: application/json
 {
-    "task_id": "schedule-task",
+    "task_id": "start-game",
     "scheduled_time": "wrong-cron",
     "args": {
         "room_id": "1"

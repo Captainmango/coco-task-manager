@@ -21,7 +21,9 @@
     - [x] Find task by ID (in crontab)
     - [x] Delete task (from crontab)
 - [ ] Set up publisher
+  - [ ] Install the relevant client and configure
+  - [ ] Gateway/ Manager abstraction?
   - [ ] Set up RabbitMQ
     - [ ] Docker compose?
-    - [x] env vars?
-  - [ ] exe to push to topic
+    - [ ] env vars?
+  - [ ] Command to push to topic

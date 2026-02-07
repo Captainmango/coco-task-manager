@@ -11,7 +11,11 @@ import (
 )
 
 func (a *app) handleLivez(w http.ResponseWriter, r *http.Request) {
-	a.writeJSON(w, http.StatusOK, map[string]string{"status": "OK"}, nil)
+	a.writeJSON(w, http.StatusOK, map[string]any{
+		"status": "OK",
+		"host": r.Host,
+		"protocol": r.Proto,
+	}, nil)
 }
 
 func (a *app) handleGetScheduledTasks(w http.ResponseWriter, r *http.Request) {
@@ -22,7 +26,6 @@ func (a *app) handleGetScheduledTasks(w http.ResponseWriter, r *http.Request) {
 			WithError(
 				err,
 				[]ScheduledTaskResponse{},
-				tMeta{"hello": "world"},
 			),
 		)
 
