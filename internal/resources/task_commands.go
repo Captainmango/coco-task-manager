@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"log/slog"
 
 	"github.com/urfave/cli/v3"
 )
@@ -9,6 +10,7 @@ import (
 func createStartGameCommand(tR TaskResource) *cli.Command {
 	return &cli.Command{
 		Name: "start-game",
+		Description: "Sends the start game message to the Dealer API",
 		Arguments: []cli.Argument{
 			&cli.StringArg{
 				Name: "room_id",
@@ -24,7 +26,8 @@ func createStartGameCommand(tR TaskResource) *cli.Command {
 
 func createScheduleCronCommand(tR TaskResource) *cli.Command {
 	return &cli.Command{
-		Name: "schedule-task",
+		Name:        "schedule-task",
+		Description: "Schedules a task to be run via the scheduler.",
 		Arguments: []cli.Argument{
 			&cli.StringArg{
 				Name: "cron",
@@ -34,8 +37,23 @@ func createScheduleCronCommand(tR TaskResource) *cli.Command {
 			},
 		},
 		Action: func(ctx context.Context, c *cli.Command) error {
-			// cmds := []string{}
-			// slog.Info("do a thing", slog.String("cmd_name", cmds[0].Name))
+			cronString := c.StringArg("cron")
+			taskString := c.StringArg("task")
+
+			if cronString == "" || taskString == "" {
+				return cli.Exit("cron and task arguments are required", 1)
+			}
+
+			err := tR.ScheduleTask(cronString, taskString)
+			if err != nil {
+				return err
+			}
+
+			slog.Info("Scheduled task",
+				slog.String("cron", cronString),
+				slog.String("task", taskString),
+			)
+
 			return nil
 		},
 	}

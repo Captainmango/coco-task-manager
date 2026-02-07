@@ -96,6 +96,10 @@ func (p *Parser) Parse() (Cron, error) {
 			p.err = ErrMalformedCron(p.input, p.peekPos)
 		}
 
+		if p.err != nil {
+			return Cron{}, p.err
+		}
+
 		cf.FragmentType, p.err = p.getCurrentFragmentType()
 
 		if p.err != nil {
