@@ -44,7 +44,7 @@ func createScheduleCronCommand(tR TaskResource) *cli.Command {
 				return cli.Exit("cron and task arguments are required", 1)
 			}
 
-			err := tR.ScheduleTask(cronString, taskString)
+			_, err := tR.ScheduleTask(cronString, taskString)
 			if err != nil {
 				return err
 			}

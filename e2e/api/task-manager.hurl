@@ -9,7 +9,7 @@ Content-Type: application/json
 HTTP 200
 [Asserts]
 jsonpath "$.type" == "scheduled_task"
-jsonpath "$.data" count == 2
+jsonpath "$.data" count == 0
 
 POST {{ host }}/api/v1/tasks
 Content-Type: application/json
@@ -23,9 +23,13 @@ Content-Type: application/json
 HTTP 202
 [Asserts]
 jsonpath "$.type" == "scheduled_task"
-jsonpath "$.data" == "" 
+jsonpath "$.data.command" == "cli schedule-task 1"
+jsonpath "$.data.cron" == "* * * * *"
+[Captures]
+taskUuid: jsonpath "$.data.id"
+ 
 
-DELETE {{ host }}/api/v1/tasks/019c3909-8ac5-760b-a99b-45cdfb16ce50
+DELETE {{ host }}/api/v1/tasks/{{taskUuid}}
 Content-Type: application/json
 HTTP 204
 

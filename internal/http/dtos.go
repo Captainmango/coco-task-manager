@@ -7,13 +7,21 @@ const (
 	TASK           = "task"
 )
 
-type ScheduledTaskDto struct {
+type ScheduledTaskResponse struct {
 	ID      uuid.UUID `json:"id"`
 	Command string    `json:"command"`
 	Cron    string    `json:"cron"`
 }
 
-type TaskDto struct {
+type TaskResponse struct {
 	Slug string   `json:"task_id"`
 	Args []string `json:"args"`
+}
+
+type ScheduleTaskRequest struct {
+	TaskId        string `json:"task_id"`
+	ScheduledTime string `json:"scheduled_time"`
+	Args          struct {
+		RoomId string `json:"room_id"`
+	} `json:"args"`
 }

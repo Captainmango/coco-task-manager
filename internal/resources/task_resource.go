@@ -35,22 +35,22 @@ func (t TaskResource) GetAllCrontabEntries() ([]crontab.CrontabEntry, error) {
 	return entries, nil
 }
 
-func (t TaskResource) ScheduleTask(cron, task string) error {
+func (t TaskResource) ScheduleTask(cron, task string) (uuid.UUID, error) {
 	p, err := parser.NewParser(parser.WithInput(cron, true))
 
 	if err != nil {
-		return err
+		return uuid.UUID{}, err
 	}
 
 	parsedExpr, err := p.Parse()
 	if err != nil {
-		return err
+		return uuid.UUID{}, err
 	}
 
 	id, err := uuid.NewV7()
 
 	if err != nil {
-		return err
+		return uuid.UUID{}, err
 	}
 
 	ctbEntry := crontab.CrontabEntry{
@@ -60,10 +60,10 @@ func (t TaskResource) ScheduleTask(cron, task string) error {
 	}
 
 	if err = t.crontabManager.WriteCrontabEntries([]crontab.CrontabEntry{ctbEntry}); err != nil {
-		return err
+		return uuid.UUID{}, err
 	}
 
-	return nil
+	return id, nil
 }
 
 func (t TaskResource) GetTaskByID(id uuid.UUID) (any, error) {

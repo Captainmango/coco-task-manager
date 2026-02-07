@@ -21,7 +21,7 @@ func (a *app) handleGetScheduledTasks(w http.ResponseWriter, r *http.Request) {
 		errRes := NewResponse(
 			WithError(
 				err,
-				[]ScheduledTaskDto{},
+				[]ScheduledTaskResponse{},
 				tMeta{"hello": "world"},
 			),
 		)
@@ -30,10 +30,10 @@ func (a *app) handleGetScheduledTasks(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var out []ScheduledTaskDto = []ScheduledTaskDto{}
+	var out []ScheduledTaskResponse = []ScheduledTaskResponse{}
 
 	for _, item := range entries {
-		i := ScheduledTaskDto{
+		i := ScheduledTaskResponse{
 			ID:      item.ID,
 			Command: item.Cmd,
 			Cron:    item.Cron.String(),
@@ -55,9 +55,9 @@ func (a *app) handleGetScheduledTasks(w http.ResponseWriter, r *http.Request) {
 func (a *app) handleGetTasks(w http.ResponseWriter, r *http.Request) {
 	cmds := a.commandsRegistry.All()
 
-	var out []TaskDto
+	var out []TaskResponse
 	for _, cmd := range cmds {
-		tOut := TaskDto{
+		tOut := TaskResponse{
 			Slug: cmd.Name,
 			Args: slices.Concat(cmd.Args().Slice()),
 		}
@@ -70,40 +70,40 @@ func (a *app) handleGetTasks(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *app) handleScheduleTask(w http.ResponseWriter, r *http.Request) {
-	var input struct {
-		TaskId        string `json:"task_id"`
-		ScheduledTime string `json:"scheduled_time"`
-		Args          struct {
-			RoomId string `json:"room_id"`
-		} `json:"args"`
-	}
+	var input ScheduleTaskRequest
 
 	err := a.readJSON(w, r, &input)
 	if err != nil {
-		res := NewResponse(WithError(err, ScheduledTaskDto{}))
+		res := NewResponse(WithError(err, ScheduledTaskResponse{}))
 		a.writeJSON(w, http.StatusInternalServerError, res, nil)
 		return
 	}
 
 	cmd, err := a.commandsRegistry.Find(input.TaskId)
 	if err != nil {
-		res := NewResponse(WithError(err, ScheduledTaskDto{}))
+		res := NewResponse(WithError(err, ScheduledTaskResponse{}))
 		a.writeJSON(w, http.StatusUnprocessableEntity, res, nil)
 		return
 	}
 
 	var cmdStringBuilder strings.Builder
-	cmdStringBuilder.WriteString(fmt.Sprintf("%s ", cmd.Name))
+	cmdStringBuilder.WriteString(fmt.Sprintf("cli %s ", cmd.Name))
 	cmdStringBuilder.WriteString(fmt.Sprintf("%s", input.Args.RoomId))
 
-	err = a.resources.TaskResource.ScheduleTask(input.ScheduledTime, cmdStringBuilder.String())
+	id, err := a.resources.TaskResource.ScheduleTask(input.ScheduledTime, cmdStringBuilder.String())
 	if err != nil {
-		res := NewResponse(WithError(err, ScheduledTaskDto{}))
+		res := NewResponse(WithError(err, ScheduledTaskResponse{}))
 		a.writeJSON(w, http.StatusUnprocessableEntity, res, nil)
 		return
 	}
 
-	res := NewResponse(WithData(SCHEDULED_TASK, ""))
+	scheduledTaskDto := ScheduledTaskResponse{
+		ID:      id,
+		Command: cmdStringBuilder.String(),
+		Cron:    input.ScheduledTime,
+	}
+
+	res := NewResponse(WithData(SCHEDULED_TASK, scheduledTaskDto))
 
 	a.writeJSON(w, http.StatusAccepted, res, nil)
 }
