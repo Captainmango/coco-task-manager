@@ -12,6 +12,8 @@ require (
 	github.com/urfave/cli/v3 v3.6.1
 )
 
+require github.com/rabbitmq/amqp091-go v1.10.0 // indirect
+
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/joho/godotenv v1.5.1
