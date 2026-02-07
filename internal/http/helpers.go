@@ -93,8 +93,8 @@ type tMeta map[string]any
 type Response[T any] struct {
 	Type  string `json:"type"`
 	Data  T      `json:"data"`
-	Error error  `json:"error"`
-	Meta  tMeta   `json:"meta"`
+	Error string `json:"error"`
+	Meta  tMeta  `json:"meta"`
 }
 
 type ResponseOptFn[T any] func(r *Response[T])
@@ -109,7 +109,7 @@ func NewResponse[T any](opts ...ResponseOptFn[T]) *Response[T] {
 	return r
 }
 
-func WithData[T any](typeParam string, data T, meta... tMeta) ResponseOptFn[T] {
+func WithData[T any](typeParam string, data T, meta ...tMeta) ResponseOptFn[T] {
 	return func(o *Response[T]) {
 		o.Type = typeParam
 		o.Data = data
@@ -120,11 +120,11 @@ func WithData[T any](typeParam string, data T, meta... tMeta) ResponseOptFn[T] {
 	}
 }
 
-func WithError[T any](e error, data T, meta... tMeta) ResponseOptFn[T] {
+func WithError[T any](e error, data T, meta ...tMeta) ResponseOptFn[T] {
 	return func(o *Response[T]) {
 		o.Type = "error"
 		o.Data = data
-		o.Error = e
+		o.Error = e.Error()
 
 		for _, m := range meta {
 			maps.Copy(o.Meta, m)
