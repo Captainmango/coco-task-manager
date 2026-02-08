@@ -41,7 +41,7 @@
   - [ ] Run the unit/ int tests
   - [ ] Run the e2e tests with Hurl
   - [ ] Reports?
-  - [ ] Linting (local and on github)
+  - [x] Linting (local and on github)
 
 - [ ] Kustomize?
   - [ ] Deployment (no need for statefulness)
