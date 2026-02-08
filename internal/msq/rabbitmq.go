@@ -2,6 +2,7 @@ package msq
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"time"
 
@@ -12,9 +13,9 @@ const exchangeName = "coco_tasks"
 
 type RabbitMQOptFn func(*RabbitMQHandler) error
 
-func WithHost(hostname string) RabbitMQOptFn {
+func WithConnStr(hostname string) RabbitMQOptFn {
 	return func(rm *RabbitMQHandler) error {
-		rm.host = hostname
+		rm.host = fmt.Sprintf("amqp://%s", hostname)
 		return nil
 	}
 }
@@ -131,6 +132,7 @@ func (rbmq *RabbitMQHandler) PullMessages(routingKey string) (<-chan amqp.Delive
 
 func (rbmq *RabbitMQHandler) handleConnection(fn func(ch *amqp.Channel) error) error {
 	conn, err := amqp.Dial(rbmq.host)
+
 	if err != nil {
 		slog.Error(err.Error())
 		return err

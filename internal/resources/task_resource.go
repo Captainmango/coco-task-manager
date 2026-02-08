@@ -5,19 +5,23 @@ import (
 
 	"github.com/captainmango/coco-cron-parser/internal/config"
 	"github.com/captainmango/coco-cron-parser/internal/crontab"
+	"github.com/captainmango/coco-cron-parser/internal/msq"
 	"github.com/captainmango/coco-cron-parser/internal/parser"
 	"github.com/google/uuid"
 )
 
 type TaskResource struct {
-	crontabManager crontab.CrontabHandler
+	crontabManager  crontab.CrontabHandler
+	msgQueueHandler msq.AdvancedMessageQueueHandler
 }
 
 func CreateTaskResource(
 	ctbeManager crontab.CrontabHandler,
+	msgQueueHandler msq.AdvancedMessageQueueHandler,
 ) TaskResource {
 	return TaskResource{
-		crontabManager: ctbeManager,
+		crontabManager:  ctbeManager,
+		msgQueueHandler: msgQueueHandler,
 	}
 }
 
@@ -54,9 +58,9 @@ func (t TaskResource) ScheduleTask(cron, task string) (uuid.UUID, error) {
 	}
 
 	ctbEntry := crontab.CrontabEntry{
-		ID: id,
+		ID:   id,
 		Cron: parsedExpr,
-		Cmd: task,
+		Cmd:  task,
 	}
 
 	if err = t.crontabManager.WriteCrontabEntries([]crontab.CrontabEntry{ctbEntry}); err != nil {
@@ -79,4 +83,9 @@ func (t TaskResource) GetTaskByID(id uuid.UUID) (any, error) {
 func (t TaskResource) RemoveTaskByID(id uuid.UUID) error {
 	err := t.crontabManager.RemoveCrontabEntryByID(id)
 	return err
+}
+
+func (t TaskResource) PushStartGameMessage() error {
+	t.msgQueueHandler.PushMessage("coco_tasks.start_game", "room_id 1")
+	return nil
 }

@@ -3,7 +3,7 @@ package resources
 import (
 	"context"
 	"log/slog"
-	
+
 	"github.com/urfave/cli/v3"
 )
 
@@ -21,7 +21,10 @@ func createStartGameCommand(tR TaskResource) *cli.Command {
 				return cli.Exit("room_id argument is required", 1)
 			}
 
-			_ = tR
+			if err := tR.PushStartGameMessage(); err != nil {
+				return cli.Exit(err.Error(), 1)
+			}
+
 			slog.Info("testing this out", slog.String("room_id", c.StringArg("room_id")))
 			return nil
 		},

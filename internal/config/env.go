@@ -10,19 +10,20 @@ import (
 var Config config
 
 type config struct {
-	CrontabFile string `env:"CRONTAB_FILE" envDefault:"./e2e/storage/crontab"`
+	CrontabFile  string `env:"CRONTAB_FILE" envDefault:"./e2e/storage/crontab"`
+	RabbitMQHost string `env:"RABBITMQ_HOST" envDefault:"localhost:5672/"`
 }
 
-type ConfigOptFn func (o *opts)
+type ConfigOptFn func(o *opts)
 type opts struct {
-	useDotEnv bool
+	useDotEnv  bool
 	dotEnvPath string
 }
 
 func WithDotEnv() ConfigOptFn {
-	return func (o *opts) {
+	return func(o *opts) {
 		o.useDotEnv = true
-	} 
+	}
 }
 
 func WithDotEnvPath(path string) ConfigOptFn {
@@ -35,7 +36,7 @@ func WithDotEnvPath(path string) ConfigOptFn {
 	}
 }
 
-func BootstrapConfig(configOpts... ConfigOptFn) {
+func BootstrapConfig(configOpts ...ConfigOptFn) {
 	opts := &opts{}
 
 	for _, optFn := range configOpts {
