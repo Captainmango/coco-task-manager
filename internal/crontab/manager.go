@@ -6,9 +6,10 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/google/uuid"
+
 	"github.com/captainmango/coco-cron-parser/internal/config"
 	"github.com/captainmango/coco-cron-parser/internal/parser"
-	"github.com/google/uuid"
 )
 
 const cronFormat = "%s root /app/%s 2>&1 | tee -a /tmp/log # %s\n"
@@ -16,13 +17,14 @@ const cronFormat = "%s root /app/%s 2>&1 | tee -a /tmp/log # %s\n"
 var (
 	errCrontabFileNotSet = errors.New("crontab file not set")
 )
+
 type CrontabHandler interface {
 	WriteCrontabEntries([]CrontabEntry) error
 	GetAllCrontabEntries() ([]CrontabEntry, error)
 	GetCrontabEntryByID(uuid.UUID) (CrontabEntry, error)
 	RemoveCrontabEntryByID(uuid.UUID) error
 }
-type CrontabManager struct {}
+type CrontabManager struct{}
 
 // Sets the cron printing mode to RAW_EXPRESSION and writes to the configured crontab file
 func (cM CrontabManager) WriteCrontabEntries(crontabs []CrontabEntry) error {

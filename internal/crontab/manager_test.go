@@ -5,12 +5,13 @@ import (
 	"os"
 	"testing"
 
-	"github.com/captainmango/coco-cron-parser/internal/config"
-	"github.com/captainmango/coco-cron-parser/internal/parser"
-	"github.com/captainmango/coco-cron-parser/internal/utils"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
+
+	"github.com/captainmango/coco-cron-parser/internal/config"
+	"github.com/captainmango/coco-cron-parser/internal/parser"
+	"github.com/captainmango/coco-cron-parser/internal/utils"
 )
 
 const expectedCrontabFormat = cronFormat
@@ -58,7 +59,6 @@ func (s *CronTabManagerTestSuite) Test_ItWritesToCrontabFile() {
 func (s *CronTabManagerTestSuite) Test_ItGetsCrontabsInFile() {
 	fakeUuIDOne, _ := uuid.NewUUID()
 	fakeUuIDTwo, _ := uuid.NewUUID()
-	
 
 	err := s.cM.WriteCrontabEntries(fixtureCrontabs(fakeUuIDOne, fakeUuIDTwo))
 
@@ -73,7 +73,6 @@ func (s *CronTabManagerTestSuite) Test_ItGetsCrontabsInFile() {
 func (s *CronTabManagerTestSuite) Test_ItGetsCrontabByID() {
 	fakeUuIDOne, _ := uuid.NewUUID()
 	fakeUuIDTwo, _ := uuid.NewUUID()
-	
 
 	err := s.cM.WriteCrontabEntries(fixtureCrontabs(fakeUuIDOne, fakeUuIDTwo))
 
@@ -89,7 +88,7 @@ func (s *CronTabManagerTestSuite) Test_ItGetsCrontabByID() {
 func (s *CronTabManagerTestSuite) Test_ItDeletesCrontabByID() {
 	fakeUuIDOne, _ := uuid.NewUUID()
 	fakeUuIDTwo, _ := uuid.NewUUID()
-	
+
 	err := s.cM.WriteCrontabEntries(fixtureCrontabs(fakeUuIDOne, fakeUuIDTwo))
 
 	assert.NoError(s.T(), err)
@@ -133,7 +132,7 @@ func exampleTestCron() parser.Cron {
 	}
 }
 
-func fixtureCrontabs(uuids... uuid.UUID) []CrontabEntry {
+func fixtureCrontabs(uuids ...uuid.UUID) []CrontabEntry {
 	var out []CrontabEntry
 
 	for _, item := range uuids {

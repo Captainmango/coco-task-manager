@@ -9,7 +9,7 @@ import (
 
 func createStartGameCommand(tR TaskResource) *cli.Command {
 	return &cli.Command{
-		Name: "start-game",
+		Name:        "start-game",
 		Description: "Sends the start game message to the Dealer API",
 		Arguments: []cli.Argument{
 			&cli.StringArg{

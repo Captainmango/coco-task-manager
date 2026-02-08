@@ -12,8 +12,8 @@ import (
 
 func (a *app) handleLivez(w http.ResponseWriter, r *http.Request) {
 	a.writeJSON(w, http.StatusOK, map[string]any{
-		"status": "OK",
-		"host": r.Host,
+		"status":   "OK",
+		"host":     r.Host,
 		"protocol": r.Proto,
 	}, nil)
 }

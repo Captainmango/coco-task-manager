@@ -3,11 +3,12 @@ package resources
 import (
 	"log/slog"
 
+	"github.com/google/uuid"
+
 	"github.com/captainmango/coco-cron-parser/internal/config"
 	"github.com/captainmango/coco-cron-parser/internal/crontab"
 	"github.com/captainmango/coco-cron-parser/internal/msq"
 	"github.com/captainmango/coco-cron-parser/internal/parser"
-	"github.com/google/uuid"
 )
 
 type TaskResource struct {

@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/captainmango/coco-cron-parser/internal/parser"
 	"github.com/google/uuid"
+
+	"github.com/captainmango/coco-cron-parser/internal/parser"
 )
 
 type CrontabEntry struct {

@@ -4,9 +4,10 @@ import (
 	"log/slog"
 	"os"
 
+	"github.com/urfave/cli/v3"
+
 	"github.com/captainmango/coco-cron-parser/internal/config"
 	"github.com/captainmango/coco-cron-parser/internal/resources"
-	"github.com/urfave/cli/v3"
 )
 
 func CreateCLI() *cli.Command {

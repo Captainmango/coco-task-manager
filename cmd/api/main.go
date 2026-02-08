@@ -24,8 +24,8 @@ func main() {
 	go func() {
 		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			slog.Error(err.Error())
-            os.Exit(1)
-            return
+			os.Exit(1)
+			return
 		}
 	}()
 
@@ -36,7 +36,7 @@ func main() {
 
 	if err := srv.Shutdown(shutdownCtx); err != nil {
 		slog.Error(err.Error())
-        os.Exit(0)
-        return
+		os.Exit(0)
+		return
 	}
 }

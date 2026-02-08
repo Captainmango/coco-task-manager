@@ -24,3 +24,15 @@ tasks:
     cmds: 
       - echo 'pushing image to GitHub'
     silent: true
+
+  lint:
+    desc: Run the linter
+    cmds:
+      - golangci-lint run -c .golangci.yml
+    silent: true
+  
+  format:
+    desc: Run the linter
+    cmds:
+      - golangci-lint fmt -c .golangci.yml
+    silent: true

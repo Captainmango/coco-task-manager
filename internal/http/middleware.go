@@ -19,12 +19,12 @@ func customLoggingMiddleware(l *slog.Logger) func(next http.Handler) http.Handle
 			duration := time.Since(reqStart)
 			requestId := middleware.GetReqID(r.Context())
 
-			l.InfoContext(r.Context(), "request completed", 
+			l.InfoContext(r.Context(), "request completed",
 				slog.String("method", r.Method),
 				slog.String("path", r.URL.Path),
-                slog.Int("status", rw.statusCode),
-                slog.Duration("duration", duration),
-                slog.String("remote_addr", r.RemoteAddr),
+				slog.Int("status", rw.statusCode),
+				slog.Duration("duration", duration),
+				slog.String("remote_addr", r.RemoteAddr),
 				slog.String("request_id", requestId),
 			)
 		})

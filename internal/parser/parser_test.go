@@ -77,7 +77,7 @@ func Test_ItHandlesBasicInputs(t *testing.T) {
 			p, _ := NewParser(
 				WithInput(testCase.input, false),
 			)
-			
+
 			out, err := p.Parse()
 			expected := testCase.expected()
 
@@ -106,29 +106,29 @@ func Test_ItHandlesComplexInputs(t *testing.T) {
 				return Cron{
 					Data: []CronFragment{
 						{
-							Expr: "*",
+							Expr:         "*",
 							FragmentType: MINUTE,
-							Kind: WILDCARD,
+							Kind:         WILDCARD,
 						},
 						{
-							Expr: "*",
+							Expr:         "*",
 							FragmentType: HOUR,
-							Kind: WILDCARD,
+							Kind:         WILDCARD,
 						},
 						{
-							Expr: "*",
+							Expr:         "*",
 							FragmentType: DAY,
-							Kind: WILDCARD,
+							Kind:         WILDCARD,
 						},
 						{
-							Expr: "*",
+							Expr:         "*",
 							FragmentType: MONTH,
-							Kind: WILDCARD,
+							Kind:         WILDCARD,
 						},
 						{
-							Expr: "*",
+							Expr:         "*",
 							FragmentType: WEEKDAY,
-							Kind: WILDCARD,
+							Kind:         WILDCARD,
 						},
 					},
 				}
@@ -141,34 +141,34 @@ func Test_ItHandlesComplexInputs(t *testing.T) {
 				return Cron{
 					Data: []CronFragment{
 						{
-							Expr: "1-5",
+							Expr:         "1-5",
 							FragmentType: MINUTE,
-							Kind: RANGE,
-							Factors: []uint8{1, 5},
+							Kind:         RANGE,
+							Factors:      []uint8{1, 5},
 						},
 						{
-							Expr: "1-5",
+							Expr:         "1-5",
 							FragmentType: HOUR,
-							Kind: RANGE,
-							Factors: []uint8{1, 5},
+							Kind:         RANGE,
+							Factors:      []uint8{1, 5},
 						},
 						{
-							Expr: "1-5",
+							Expr:         "1-5",
 							FragmentType: DAY,
-							Kind: RANGE,
-							Factors: []uint8{1, 5},
+							Kind:         RANGE,
+							Factors:      []uint8{1, 5},
 						},
 						{
-							Expr: "1-5",
+							Expr:         "1-5",
 							FragmentType: MONTH,
-							Kind: RANGE,
-							Factors: []uint8{1, 5},
+							Kind:         RANGE,
+							Factors:      []uint8{1, 5},
 						},
 						{
-							Expr: "1-5",
+							Expr:         "1-5",
 							FragmentType: WEEKDAY,
-							Kind: RANGE,
-							Factors: []uint8{1, 5},
+							Kind:         RANGE,
+							Factors:      []uint8{1, 5},
 						},
 					},
 				}
@@ -181,34 +181,34 @@ func Test_ItHandlesComplexInputs(t *testing.T) {
 				return Cron{
 					Data: []CronFragment{
 						{
-							Expr: "1,5",
+							Expr:         "1,5",
 							FragmentType: MINUTE,
-							Kind: LIST,
-							Factors: []uint8{1, 5},
+							Kind:         LIST,
+							Factors:      []uint8{1, 5},
 						},
 						{
-							Expr: "1,5",
+							Expr:         "1,5",
 							FragmentType: HOUR,
-							Kind: LIST,
-							Factors: []uint8{1, 5},
+							Kind:         LIST,
+							Factors:      []uint8{1, 5},
 						},
 						{
-							Expr: "1,5",
+							Expr:         "1,5",
 							FragmentType: DAY,
-							Kind: LIST,
-							Factors: []uint8{1, 5},
+							Kind:         LIST,
+							Factors:      []uint8{1, 5},
 						},
 						{
-							Expr: "1,5",
+							Expr:         "1,5",
 							FragmentType: MONTH,
-							Kind: LIST,
-							Factors: []uint8{1, 5},
+							Kind:         LIST,
+							Factors:      []uint8{1, 5},
 						},
 						{
-							Expr: "1,5",
+							Expr:         "1,5",
 							FragmentType: WEEKDAY,
-							Kind: LIST,
-							Factors: []uint8{1, 5},
+							Kind:         LIST,
+							Factors:      []uint8{1, 5},
 						},
 					},
 				}
@@ -221,34 +221,34 @@ func Test_ItHandlesComplexInputs(t *testing.T) {
 				return Cron{
 					Data: []CronFragment{
 						{
-							Expr: "*/5",
+							Expr:         "*/5",
 							FragmentType: MINUTE,
-							Kind: DIVISOR,
-							Factors: []uint8{5},
+							Kind:         DIVISOR,
+							Factors:      []uint8{5},
 						},
 						{
-							Expr: "*/5",
+							Expr:         "*/5",
 							FragmentType: HOUR,
-							Kind: DIVISOR,
-							Factors: []uint8{5},
+							Kind:         DIVISOR,
+							Factors:      []uint8{5},
 						},
 						{
-							Expr: "*/5",
+							Expr:         "*/5",
 							FragmentType: DAY,
-							Kind: DIVISOR,
-							Factors: []uint8{5},
+							Kind:         DIVISOR,
+							Factors:      []uint8{5},
 						},
 						{
-							Expr: "*/5",
+							Expr:         "*/5",
 							FragmentType: MONTH,
-							Kind: DIVISOR,
-							Factors: []uint8{5},
+							Kind:         DIVISOR,
+							Factors:      []uint8{5},
 						},
 						{
-							Expr: "*/5",
+							Expr:         "*/5",
 							FragmentType: WEEKDAY,
-							Kind: DIVISOR,
-							Factors: []uint8{5},
+							Kind:         DIVISOR,
+							Factors:      []uint8{5},
 						},
 					},
 				}
@@ -261,34 +261,34 @@ func Test_ItHandlesComplexInputs(t *testing.T) {
 				return Cron{
 					Data: []CronFragment{
 						{
-							Expr: "5",
+							Expr:         "5",
 							FragmentType: MINUTE,
-							Kind: SINGLE,
-							Factors: []uint8{5},
+							Kind:         SINGLE,
+							Factors:      []uint8{5},
 						},
 						{
-							Expr: "5",
+							Expr:         "5",
 							FragmentType: HOUR,
-							Kind: SINGLE,
-							Factors: []uint8{5},
+							Kind:         SINGLE,
+							Factors:      []uint8{5},
 						},
 						{
-							Expr: "5",
+							Expr:         "5",
 							FragmentType: DAY,
-							Kind: SINGLE,
-							Factors: []uint8{5},
+							Kind:         SINGLE,
+							Factors:      []uint8{5},
 						},
 						{
-							Expr: "5",
+							Expr:         "5",
 							FragmentType: MONTH,
-							Kind: SINGLE,
-							Factors: []uint8{5},
+							Kind:         SINGLE,
+							Factors:      []uint8{5},
 						},
 						{
-							Expr: "5",
+							Expr:         "5",
 							FragmentType: WEEKDAY,
-							Kind: SINGLE,
-							Factors: []uint8{5},
+							Kind:         SINGLE,
+							Factors:      []uint8{5},
 						},
 					},
 				}
@@ -301,7 +301,7 @@ func Test_ItHandlesComplexInputs(t *testing.T) {
 			p, _ := NewParser(
 				WithInput(testCase.input, true),
 			)
-			
+
 			out, err := p.Parse()
 			expected := testCase.expected()
 
