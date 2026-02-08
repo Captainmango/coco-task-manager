@@ -11,19 +11,17 @@ import (
 
 const exchangeName = "coco_tasks"
 
-type RabbitMQOptFn func(*RabbitMQHandler) error
+type RabbitMQOptFn func(*RabbitMQHandler)
 
 func WithConnStr(hostname string) RabbitMQOptFn {
-	return func(rm *RabbitMQHandler) error {
+	return func(rm *RabbitMQHandler) {
 		rm.host = fmt.Sprintf("amqp://%s", hostname)
-		return nil
 	}
 }
 
 func WithBufferSize(bufferSize int) RabbitMQOptFn {
-	return func(rm *RabbitMQHandler) error {
+	return func(rm *RabbitMQHandler) {
 		rm.bufferSize = bufferSize
-		return nil
 	}
 }
 
@@ -69,6 +67,11 @@ func (rbmq *RabbitMQHandler) PushMessage(routingKey, body string) error {
 				Body:        []byte(body),
 			},
 		)
+
+		if err != nil {
+			slog.Error(err.Error())
+			return err
+		}
 
 		slog.Info("Pushed message", slog.String("body", body))
 

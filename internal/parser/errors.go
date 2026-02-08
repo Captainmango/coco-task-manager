@@ -7,7 +7,7 @@ import (
 
 const (
 	errInvalidInputFmt         = "%s is not a valid input"
-	errMalformedCronFmt        = "malformed cron expression: '%s' invalid character after postion %d"
+	errMalformedCronFmt        = "malformed cron expression: '%s' invalid character after position %d"
 	errTooManySpacesFmt        = "malformed cron expression: '%s' too many spaces at position %d"
 	errUnknownBoundsTypeFmt    = "unknown bounds type %s"
 	errFactorsOutsideBoundsFmt = "number outside of %s range %d is not within %d to %d (inclusive)"

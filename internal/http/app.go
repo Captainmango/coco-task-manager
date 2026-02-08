@@ -4,6 +4,7 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -39,7 +40,8 @@ func CreateApp() *http.Server {
 	r.Use(customLoggingMiddleware(logger))
 
 	return &http.Server{
-		Addr:    ":3000",
-		Handler: a.apiV1Router(r),
+		Addr:        ":3000",
+		Handler:     a.apiV1Router(r),
+		ReadTimeout: 5 * time.Second,
 	}
 }

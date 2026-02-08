@@ -3,6 +3,7 @@ package parser
 import (
 	"fmt"
 	"iter"
+	"log/slog"
 	"slices"
 	"strings"
 
@@ -93,7 +94,12 @@ func (c Cron) MarshalText() ([]byte, error) {
 	case POSSIBLE_VALUES:
 		for _, cf := range c.Data {
 			var strNums []string
-			vals, _ := cf.GetPossibleValues()
+			vals, err := cf.GetPossibleValues()
+
+			if err != nil {
+				return []byte{}, err
+			}
+
 			for _, num := range vals {
 				strNums = append(strNums, fmt.Sprintf("%d", num))
 			}
@@ -115,7 +121,13 @@ func (c Cron) MarshalText() ([]byte, error) {
 }
 
 func (c Cron) String() string {
-	out, _ := c.MarshalText()
+	out, err := c.MarshalText()
+
+	if err != nil {
+		slog.Error(err.Error())
+		return ""
+	}
+
 	return string(out)
 }
 

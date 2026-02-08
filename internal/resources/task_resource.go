@@ -20,10 +20,8 @@ func CreateTaskResource(
 	ctbeManager crontab.CrontabHandler,
 	msgQueueHandler msq.AdvancedMessageQueueHandler,
 ) TaskResource {
-	return TaskResource{
-		crontabManager:  ctbeManager,
-		msgQueueHandler: msgQueueHandler,
-	}
+
+	return TaskResource{crontabManager: ctbeManager, msgQueueHandler: msgQueueHandler}
 }
 
 func (t TaskResource) GetAllCrontabEntries() ([]crontab.CrontabEntry, error) {
@@ -87,6 +85,11 @@ func (t TaskResource) RemoveTaskByID(id uuid.UUID) error {
 }
 
 func (t TaskResource) PushStartGameMessage() error {
-	t.msgQueueHandler.PushMessage("coco_tasks.start_game", "room_id 1")
+	err := t.msgQueueHandler.PushMessage("coco_tasks.start_game", "room_id 1")
+
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

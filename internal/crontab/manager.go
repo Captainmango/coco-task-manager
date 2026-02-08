@@ -117,7 +117,7 @@ func (cM CrontabManager) RemoveCrontabEntryByID(id uuid.UUID) error {
 
 	err = cM.withCrontab(func(f *os.File) error {
 		for _, item := range entriesToKeep {
-			_, err := fmt.Fprintf(f, cronFormat, item.Cron, item.Cmd, item.ID)
+			_, err = fmt.Fprintf(f, cronFormat, item.Cron, item.Cmd, item.ID)
 			if err != nil {
 				return err
 			}

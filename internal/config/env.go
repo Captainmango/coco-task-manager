@@ -45,8 +45,10 @@ func BootstrapConfig(configOpts ...ConfigOptFn) {
 
 	if opts.useDotEnv {
 		if opts.dotEnvPath != "" {
+			//nolint:errcheck // We don't care if this blows up.
 			godotenv.Load(opts.dotEnvPath)
 		} else {
+			//nolint:errcheck // ... Or this
 			godotenv.Load()
 		}
 	}

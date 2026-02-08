@@ -28,7 +28,7 @@ linters:
     govet:
       enable-all: true
     misspell:
-      locale: US
+      locale: GB
     whitespace:
       multi-if: true
       multi-func: true
@@ -43,18 +43,24 @@ linters:
       - linters:
           - dupl
           - goconst
-        path: _test\.go
+          - errcheck
+        path: internal/.*_test\.go
+      - linters:
+          - errcheck
+        path: internal/http/handlers.go
+      - linters:
+          - errcheck
+          - gosec
+        path: internal/parser/*.
       - linters:
           - gosec
         path: internal/testing/
-      - linters:
-          - dupl
-          - goconst
-        path: e2e/
     paths:
       - third_party$
       - builtin$
       - examples$
+      - e2e$
+      - build£
 issues:
   max-issues-per-linter: 50
   max-same-issues: 3

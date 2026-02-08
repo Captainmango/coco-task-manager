@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"maps"
 	"net/http"
 	"strings"
@@ -32,7 +33,12 @@ func (a *app) writeJSON(w http.ResponseWriter, status int, data any, headers htt
 	maps.Insert(w.Header(), maps.All(headers))
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
-	w.Write(js)
+	_, err = w.Write(js)
+
+	if err != nil {
+		slog.Error(err.Error())
+		return err
+	}
 
 	return nil
 }

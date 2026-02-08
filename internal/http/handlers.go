@@ -33,7 +33,7 @@ func (a *app) handleGetScheduledTasks(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var out []ScheduledTaskResponse = []ScheduledTaskResponse{}
+	var out []ScheduledTaskResponse
 
 	for _, item := range entries {
 		i := ScheduledTaskResponse{
@@ -90,8 +90,8 @@ func (a *app) handleScheduleTask(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var cmdStringBuilder strings.Builder
-	cmdStringBuilder.WriteString(fmt.Sprintf("cli %s ", cmd.Name))
-	cmdStringBuilder.WriteString(fmt.Sprintf("%s", input.Args.RoomId))
+	fmt.Fprintf(&cmdStringBuilder, "cli %s ", cmd.Name)
+	fmt.Fprintf(&cmdStringBuilder, "%s", input.Args.RoomId)
 
 	id, err := a.resources.TaskResource.ScheduleTask(input.ScheduledTime, cmdStringBuilder.String())
 	if err != nil {
