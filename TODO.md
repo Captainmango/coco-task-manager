@@ -37,6 +37,12 @@
   - [ ] Service level unit tests
   - [ ] CLI Integration tests
 
+- [ ] CI
+  - [ ] Run the unit/ int tests
+  - [ ] Run the e2e tests with Hurl
+  - [ ] Reports?
+  - [ ] Linting (local and on github)
+
 - [ ] Kustomize?
   - [ ] Deployment (no need for statefulness)
   - [ ] Service
