@@ -4,6 +4,7 @@ import (
 	"log/slog"
 
 	"github.com/google/uuid"
+	amqp "github.com/rabbitmq/amqp091-go"
 
 	"github.com/captainmango/coco-cron-parser/internal/config"
 	"github.com/captainmango/coco-cron-parser/internal/crontab"
@@ -84,12 +85,22 @@ func (t TaskResource) RemoveTaskByID(id uuid.UUID) error {
 	return err
 }
 
-func (t TaskResource) PushStartGameMessage() error {
-	err := t.msgQueueHandler.PushMessage("coco_tasks.start_game", "room_id 1")
+func (t TaskResource) PushStartGameMessage(p msq.StartGamePayload) error {
+	err := t.msgQueueHandler.PushMessage("coco_tasks.start_game", p.RoomId)
 
 	if err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func (t TaskResource) PullMessages(topic string) (<-chan amqp.Delivery, error) {
+	msgs, err := t.msgQueueHandler.PullMessages(topic)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return msgs, nil
 }

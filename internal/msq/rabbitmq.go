@@ -100,6 +100,11 @@ func (rbmq *RabbitMQHandler) PullMessages(routingKey string) (<-chan amqp.Delive
 			slog.Error(err.Error())
 			return err
 		}
+		err = ch.Qos(rbmq.bufferSize, 0, false)
+		if err != nil {
+			slog.Error(err.Error())
+			return err
+		}
 
 		err = ch.QueueBind(
 			q.Name,       // queue name

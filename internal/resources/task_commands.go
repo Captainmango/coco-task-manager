@@ -2,9 +2,12 @@ package resources
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 
 	"github.com/urfave/cli/v3"
+
+	"github.com/captainmango/coco-cron-parser/internal/msq"
 )
 
 func createStartGameCommand(tR TaskResource) *cli.Command {
@@ -17,15 +20,56 @@ func createStartGameCommand(tR TaskResource) *cli.Command {
 			},
 		},
 		Action: func(ctx context.Context, c *cli.Command) error {
-			if c.StringArg("room_id") == "" {
+			roomIdString := c.StringArg("room_id")
+			if roomIdString == "" {
 				return cli.Exit("room_id argument is required", 1)
 			}
 
-			if err := tR.PushStartGameMessage(); err != nil {
+			startGamePayload := msq.StartGamePayload{
+				RoomId: roomIdString,
+			}
+
+			if err := tR.PushStartGameMessage(startGamePayload); err != nil {
 				return cli.Exit(err.Error(), 1)
 			}
 
-			slog.Info("testing this out", slog.String("room_id", c.StringArg("room_id")))
+			return nil
+		},
+	}
+}
+
+func createPullMessagesCommand(tR TaskResource) *cli.Command {
+	return &cli.Command{
+		Name:        "pull-messages",
+		Description: "Pulls messages from the given topic. Used primarily for debugging",
+		Arguments: []cli.Argument{
+			&cli.StringArg{
+				Name: "topic",
+			},
+		},
+		Action: func(ctx context.Context, c *cli.Command) error {
+			topicString := c.StringArg("topic")
+			if topicString == "" {
+				return cli.Exit("topic argument is required", 1)
+			}
+
+			msgs, err := tR.PullMessages(topicString)
+			if err != nil {
+				return cli.Exit(err.Error(), 1)
+			}
+
+			var forever chan struct{}
+
+			go func() {
+				for d := range msgs {
+					slog.Info("Message received", slog.String("body", string(d.Body)))
+					panic("here")
+				}
+			}()
+
+			fmt.Println("Waiting for messages. CTRL + C to terminate")
+			<-forever
+
 			return nil
 		},
 	}
@@ -70,4 +114,5 @@ func init() {
 	taskResource := CreateResources().TaskResource
 	CommandRegistry.Register(createStartGameCommand(taskResource))
 	CommandRegistry.Register(createScheduleCronCommand(taskResource))
+	CommandRegistry.Register(createPullMessagesCommand(taskResource))
 }
