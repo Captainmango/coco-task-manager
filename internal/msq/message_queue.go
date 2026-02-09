@@ -1,8 +1,14 @@
 package msq
 
-import amqp "github.com/rabbitmq/amqp091-go"
+import (
+	"context"
+
+	amqp "github.com/rabbitmq/amqp091-go"
+)
+
+type ConsumeMessageFn func (msg amqp.Delivery) error
 
 type AdvancedMessageQueueHandler interface {
 	PushMessage(routingKey, body string) error
-	PullMessages(routingKey string) (<-chan amqp.Delivery, error)
+	ConsumeMessages(ctx context.Context, routingKey string, fn ConsumeMessageFn) error
 }

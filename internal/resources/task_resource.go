@@ -1,10 +1,10 @@
 package resources
 
 import (
+	"context"
 	"log/slog"
 
 	"github.com/google/uuid"
-	amqp "github.com/rabbitmq/amqp091-go"
 
 	"github.com/captainmango/coco-cron-parser/internal/config"
 	"github.com/captainmango/coco-cron-parser/internal/crontab"
@@ -95,12 +95,12 @@ func (t TaskResource) PushStartGameMessage(p msq.StartGamePayload) error {
 	return nil
 }
 
-func (t TaskResource) PullMessages(topic string) (<-chan amqp.Delivery, error) {
-	msgs, err := t.msgQueueHandler.PullMessages(topic)
+func (t TaskResource) ProcessMessages(ctx context.Context, routingKey string, fn msq.ConsumeMessageFn) error {
+	err := t.msgQueueHandler.ConsumeMessages(ctx, routingKey, fn)
 
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return msgs, nil
+	return nil
 }

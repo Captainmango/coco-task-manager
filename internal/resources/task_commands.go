@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 
+	"github.com/rabbitmq/amqp091-go"
 	"github.com/urfave/cli/v3"
 
 	"github.com/captainmango/coco-cron-parser/internal/msq"
@@ -53,18 +54,17 @@ func createPullMessagesCommand(tR TaskResource) *cli.Command {
 				return cli.Exit("topic argument is required", 1)
 			}
 
-			msgs, err := tR.PullMessages(topicString)
-			if err != nil {
-				return cli.Exit(err.Error(), 1)
-			}
-
 			var forever chan struct{}
-
-			go func() {
-				for d := range msgs {
-					slog.Info("Message received", slog.String("body", string(d.Body)))
-					panic("here")
+			go func () error {
+				err := tR.ProcessMessages(ctx, "coco_tasks.start_game", func(msg amqp091.Delivery) error {
+					slog.Info("Message received", slog.String("body", string(msg.Body)))
+					return nil
+				})
+				if err != nil {
+					return cli.Exit(err.Error(), 1)
 				}
+
+				return nil
 			}()
 
 			fmt.Println("Waiting for messages. CTRL + C to terminate")
