@@ -13,7 +13,54 @@ import (
 
 const exchangeName = "coco_tasks"
 
+type RabbitMQHandler struct {
+	host       string
+	bufferSize int
+	conn       *amqp.Connection
+	chPool     chan *amqp.Channel
+	mu         sync.RWMutex
+	closed     bool
+	poolSize   int
+	timeout    time.Duration
+}
+
 type RabbitMQOptFn func(*RabbitMQHandler) error
+
+func NewRabbitMQHandler(opts ...RabbitMQOptFn) (*RabbitMQHandler, error) {
+	rbmq := &RabbitMQHandler{
+		poolSize:   10,
+		bufferSize: 50,
+		timeout:    5 * time.Second,
+	}
+
+	for _, opt := range opts {
+		if err := opt(rbmq); err != nil {
+			return nil, err
+		}
+	}
+
+	conn, err := amqp.Dial(rbmq.host)
+
+	if err != nil {
+		slog.Error(err.Error())
+		return nil, err
+	}
+	rbmq.conn = conn
+
+	rbmq.chPool = make(chan *amqp.Channel, rbmq.bufferSize)
+	for i := 0; i < rbmq.bufferSize; i++ {
+		ch, err := conn.Channel()
+		if err != nil {
+			rbmq.Close()
+			slog.Error(err.Error())
+			return nil, fmt.Errorf("unable to create Channel: %w", err)
+		}
+
+		rbmq.chPool <- ch
+	}
+
+	return rbmq, nil
+}
 
 func WithConnStr(hostname string) RabbitMQOptFn {
 	return func(rm *RabbitMQHandler) error {
@@ -29,50 +76,70 @@ func WithBufferSize(bufferSize int) RabbitMQOptFn {
 	}
 }
 
-func NewRabbitMQHandler(opts ...RabbitMQOptFn) (*RabbitMQHandler, error) {
-	rbmq := &RabbitMQHandler{}
+func WithPoolSize(poolSize int) RabbitMQOptFn {
+	return func(rm *RabbitMQHandler) error {
+		rm.poolSize = poolSize
+		return nil
+	}
+}
 
-	for _, opt := range opts {
-		if err := opt(rbmq); err != nil {
-			return nil, err
-		}
+func WithConnectTimeout(timeout time.Duration) RabbitMQOptFn {
+	return func(rm *RabbitMQHandler) error {
+		rm.timeout = timeout
+		return nil
+	}
+}
+
+func (rbmq *RabbitMQHandler) getChannel() (*amqp.Channel, error) {
+	rbmq.mu.RLock()
+	if rbmq.closed {
+		rbmq.mu.RUnlock()
+		return nil, errors.New("handler closed")
+	}
+	rbmq.mu.RUnlock()
+
+	select {
+	case ch := <-rbmq.chPool:
+		return ch, nil
+	case <-time.After(rbmq.timeout):
+		return nil, errors.New("timeout waiting for channel")
+	}
+}
+
+func (rbmq *RabbitMQHandler) returnChannel(ch *amqp.Channel) {
+	rbmq.mu.RLock()
+	defer rbmq.mu.RUnlock()
+
+	if rbmq.closed {
+		ch.Close()
+		return
 	}
 
-	if rbmq.bufferSize == 0 {
-		rbmq.bufferSize = 50 // Sane default of 50 messages in buffer
+	select {
+	case rbmq.chPool <- ch:
+	default:
+		// Unreachable, but just in case...
+		ch.Close()
 	}
-
-	conn, err := amqp.Dial(rbmq.host)
-
-	if err != nil {
-		slog.Error(err.Error())
-		return nil, err
-	}
-	rbmq.conn = conn
-
-	ch, err := conn.Channel()
-	if err != nil {
-		slog.Error(err.Error())
-		return nil, err
-	}
-	rbmq.ch = ch
-
-	return rbmq, nil
 }
 
 func (rbmq *RabbitMQHandler) Close() error {
 	rbmq.mu.Lock()
-	chann := rbmq.ch
+	if rbmq.closed {
+		rbmq.mu.Unlock()
+		return nil
+	}
+	rbmq.closed = true
 	rbmq.mu.Unlock()
 
-	err := chann.Close()
-	if err != nil {
-		slog.Error(err.Error())
-		return err
+	close(rbmq.chPool)
+	for ch := range rbmq.chPool {
+		if err := ch.Close(); err != nil {
+			slog.Error(err.Error())
+		}
 	}
 
-	err = rbmq.conn.Close()
-	if err != nil {
+	if err := rbmq.conn.Close(); err != nil {
 		slog.Error(err.Error())
 		return err
 	}
@@ -80,23 +147,15 @@ func (rbmq *RabbitMQHandler) Close() error {
 	return nil
 }
 
-type RabbitMQHandler struct {
-	host       string
-	bufferSize int
-	conn       *amqp.Connection
-	ch         *amqp.Channel
-	mu         sync.Mutex
-}
-
 func (rbmq *RabbitMQHandler) PushMessage(routingKey, body string) error {
-	rbmq.mu.Lock()
-	chann := rbmq.ch
-	rbmq.mu.Unlock()
-	if chann == nil {
-		return errors.New("rabbitmq channel is closed")
-	}
+	ch, err := rbmq.getChannel()
 
-	if err := exchangeDefinition(chann); err != nil {
+	if err != nil {
+		return err
+	}
+	defer rbmq.returnChannel(ch)
+
+	if err := exchangeDefinition(ch); err != nil {
 		slog.Error(err.Error())
 		return err
 	}
@@ -104,7 +163,7 @@ func (rbmq *RabbitMQHandler) PushMessage(routingKey, body string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	err := chann.PublishWithContext(
+	err = ch.PublishWithContext(
 		ctx,
 		exchangeName, // exchange
 		routingKey,   // routing key
@@ -127,21 +186,25 @@ func (rbmq *RabbitMQHandler) PushMessage(routingKey, body string) error {
 }
 
 func (rbmq *RabbitMQHandler) ConsumeMessages(ctx context.Context, routingKey string, fn ConsumeMessageFn) error {
-	rbmq.mu.Lock()
-	chann := rbmq.ch
-	rbmq.mu.Unlock()
-	if chann == nil {
-		return errors.New("rabbitmq channel is closed")
+	rbmq.mu.RLock()
+	if rbmq.closed {
+		rbmq.mu.Unlock()
+		return errors.New("handler closed")
+	}
+	conn := rbmq.conn
+	rbmq.mu.RUnlock()
+
+	ch, err := conn.Channel()
+	if err != nil {
+		return err
 	}
 
-	err := exchangeDefinition(chann)
-
-	if err != nil {
+	if err = exchangeDefinition(ch); err != nil {
 		slog.Error(err.Error())
 		return err
 	}
 
-	q, err := chann.QueueDeclare(
+	q, err := ch.QueueDeclare(
 		"",    // name
 		false, // durable
 		false, // delete when unused
@@ -154,12 +217,12 @@ func (rbmq *RabbitMQHandler) ConsumeMessages(ctx context.Context, routingKey str
 		return err
 	}
 
-	if err = chann.Qos(rbmq.bufferSize, 0, false); err != nil {
+	if err = ch.Qos(rbmq.bufferSize, 0, false); err != nil {
 		slog.Error(err.Error())
 		return err
 	}
 
-	err = chann.QueueBind(
+	err = ch.QueueBind(
 		q.Name,       // queue name
 		routingKey,   // routing key
 		exchangeName, // exchange
@@ -171,7 +234,7 @@ func (rbmq *RabbitMQHandler) ConsumeMessages(ctx context.Context, routingKey str
 		return err
 	}
 
-	msgs, err := chann.Consume(
+	msgs, err := ch.Consume(
 		q.Name, // queue
 		"",     // consumer
 		true,   // auto ack
