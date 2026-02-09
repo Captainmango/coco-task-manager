@@ -56,7 +56,7 @@ func createPullMessagesCommand(tR TaskResource) *cli.Command {
 				return cli.Exit("topic argument is required", 1)
 			}
 
-			var forever chan struct{}
+			forever := make(chan struct{})
 			// nolint:errcheck // This is for debugging purposes.
 			go func() error {
 				err := tR.ProcessMessages(ctx, "coco_tasks.start_game", func(msg amqp.Delivery) error {
