@@ -1,7 +1,9 @@
 package resources
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"log/slog"
 
@@ -58,7 +60,15 @@ func createPullMessagesCommand(tR TaskResource) *cli.Command {
 			// nolint:errcheck // This is for debugging purposes.
 			go func() error {
 				err := tR.ProcessMessages(ctx, "coco_tasks.start_game", func(msg amqp.Delivery) error {
-					slog.Info("Message received", slog.String("body", string(msg.Body)))
+					var t struct {
+						RoomId string `json:"room_id"`
+					}
+
+					json.NewDecoder(bytes.NewReader(msg.Body)).Decode(&t)
+
+					slog.Info("Got Json", slog.String("payload", t.RoomId))
+					msg.Ack(false)
+
 					return nil
 				})
 				if err != nil {

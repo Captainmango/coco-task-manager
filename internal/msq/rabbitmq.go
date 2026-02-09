@@ -59,6 +59,14 @@ func NewRabbitMQHandler(opts ...RabbitMQOptFn) (*RabbitMQHandler, error) {
 		rbmq.chPool <- ch
 	}
 
+	ch, err := rbmq.getChannel()
+	if err != nil {
+		return nil, err
+	}
+	defer rbmq.returnChannel(ch)
+
+	err = exchangeDefinition(ch)
+
 	return rbmq, nil
 }
 
@@ -94,7 +102,7 @@ func (rbmq *RabbitMQHandler) getChannel() (*amqp.Channel, error) {
 	rbmq.mu.RLock()
 	if rbmq.closed {
 		rbmq.mu.RUnlock()
-		return nil, errors.New("handler closed")
+		return nil, errHandlerClosed()
 	}
 	rbmq.mu.RUnlock()
 
@@ -155,12 +163,7 @@ func (rbmq *RabbitMQHandler) PushMessage(routingKey, body string) error {
 	}
 	defer rbmq.returnChannel(ch)
 
-	if err := exchangeDefinition(ch); err != nil {
-		slog.Error(err.Error())
-		return err
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), rbmq.timeout)
 	defer cancel()
 
 	err = ch.PublishWithContext(
@@ -189,7 +192,7 @@ func (rbmq *RabbitMQHandler) ConsumeMessages(ctx context.Context, routingKey str
 	rbmq.mu.RLock()
 	if rbmq.closed {
 		rbmq.mu.RUnlock()
-		return errors.New("handler closed")
+		return errHandlerClosed()
 	}
 	conn := rbmq.conn
 	rbmq.mu.RUnlock()
@@ -198,11 +201,7 @@ func (rbmq *RabbitMQHandler) ConsumeMessages(ctx context.Context, routingKey str
 	if err != nil {
 		return err
 	}
-
-	if err = exchangeDefinition(ch); err != nil {
-		slog.Error(err.Error())
-		return err
-	}
+	defer ch.Close()
 
 	q, err := ch.QueueDeclare(
 		"",    // name
@@ -237,7 +236,7 @@ func (rbmq *RabbitMQHandler) ConsumeMessages(ctx context.Context, routingKey str
 	msgs, err := ch.Consume(
 		q.Name, // queue
 		"",     // consumer
-		true,   // auto ack
+		false,   // auto ack
 		false,  // exclusive
 		false,  // no local
 		false,  // no wait
@@ -277,4 +276,8 @@ func exchangeDefinition(ch *amqp.Channel) error {
 	)
 
 	return err
+}
+
+func errHandlerClosed() error {
+	return errors.New("handler closed")
 }
