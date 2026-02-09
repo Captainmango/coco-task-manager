@@ -11,37 +11,43 @@ import (
 
 const exchangeName = "coco_tasks"
 
-type RabbitMQOptFn func(*RabbitMQHandler)
+type RabbitMQOptFn func(*RabbitMQHandler) error
 
 func WithConnStr(hostname string) RabbitMQOptFn {
-	return func(rm *RabbitMQHandler) {
+	return func(rm *RabbitMQHandler) error {
 		rm.host = fmt.Sprintf("amqp://%s", hostname)
+		return nil
 	}
 }
 
 func WithBufferSize(bufferSize int) RabbitMQOptFn {
-	return func(rm *RabbitMQHandler) {
+	return func(rm *RabbitMQHandler) error {
 		rm.bufferSize = bufferSize
+		return nil
 	}
 }
 
-func NewRabbitMQHandler(opts ...RabbitMQOptFn) *RabbitMQHandler {
+func NewRabbitMQHandler(opts ...RabbitMQOptFn) (*RabbitMQHandler, error) {
 	rbmq := &RabbitMQHandler{}
 
 	for _, opt := range opts {
-		opt(rbmq)
+		if err := opt(rbmq); err != nil {
+			return nil, err
+		}
 	}
 
 	if rbmq.bufferSize == 0 {
 		rbmq.bufferSize = 50 // Sane default of 50 messages in buffer
 	}
 
-	return rbmq
+	return rbmq, nil
 }
 
 type RabbitMQHandler struct {
 	host       string
 	bufferSize int
+	conn       *amqp.Connection
+	ch         *amqp.Channel
 }
 
 func (rbmq *RabbitMQHandler) PushMessage(routingKey, body string) error {
