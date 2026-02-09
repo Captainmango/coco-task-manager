@@ -188,7 +188,7 @@ func (rbmq *RabbitMQHandler) PushMessage(routingKey, body string) error {
 func (rbmq *RabbitMQHandler) ConsumeMessages(ctx context.Context, routingKey string, fn ConsumeMessageFn) error {
 	rbmq.mu.RLock()
 	if rbmq.closed {
-		rbmq.mu.Unlock()
+		rbmq.mu.RUnlock()
 		return errors.New("handler closed")
 	}
 	conn := rbmq.conn
