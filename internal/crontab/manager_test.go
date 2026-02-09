@@ -30,7 +30,7 @@ func (s *CronTabManagerTestSuite) SetupTest() {
 	config.BootstrapConfig()
 	config.Config.CrontabFile = utils.BasePath("e2e/storage/crontab")
 	s.cron = exampleTestCron()
-	s.cM = CrontabManager{}
+	s.cM = &CrontabManager{}
 }
 
 func (s *CronTabManagerTestSuite) TearDownTest() {

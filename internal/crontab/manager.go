@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"sync"
 
 	"github.com/google/uuid"
 
@@ -24,10 +25,17 @@ type CrontabHandler interface {
 	GetCrontabEntryByID(uuid.UUID) (CrontabEntry, error)
 	RemoveCrontabEntryByID(uuid.UUID) error
 }
-type CrontabManager struct{}
+
+type CrontabManager struct{
+	mu sync.Mutex
+}
+
+func NewCrontabManager() *CrontabManager {
+	return &CrontabManager{}
+}
 
 // Sets the cron printing mode to RAW_EXPRESSION and writes to the configured crontab file
-func (cM CrontabManager) WriteCrontabEntries(crontabs []CrontabEntry) error {
+func (cM *CrontabManager) WriteCrontabEntries(crontabs []CrontabEntry) error {
 	err := cM.withCrontab(func(f *os.File) error {
 		for _, ctbE := range crontabs {
 			ctbE.Cron.PrintingMode = parser.RAW_EXPRESSION
@@ -48,7 +56,7 @@ func (cM CrontabManager) WriteCrontabEntries(crontabs []CrontabEntry) error {
 	return nil
 }
 
-func (cM CrontabManager) GetAllCrontabEntries() ([]CrontabEntry, error) {
+func (cM *CrontabManager) GetAllCrontabEntries() ([]CrontabEntry, error) {
 	var out []CrontabEntry
 
 	err := cM.withCrontab(func(f *os.File) error {
@@ -75,7 +83,7 @@ func (cM CrontabManager) GetAllCrontabEntries() ([]CrontabEntry, error) {
 	return out, nil
 }
 
-func (cM CrontabManager) GetCrontabEntryByID(id uuid.UUID) (CrontabEntry, error) {
+func (cM *CrontabManager) GetCrontabEntryByID(id uuid.UUID) (CrontabEntry, error) {
 	var ctbE CrontabEntry
 	allEntries, err := cM.GetAllCrontabEntries()
 	if err != nil {
@@ -95,7 +103,7 @@ func (cM CrontabManager) GetCrontabEntryByID(id uuid.UUID) (CrontabEntry, error)
 	return ctbE, nil
 }
 
-func (cM CrontabManager) RemoveCrontabEntryByID(id uuid.UUID) error {
+func (cM *CrontabManager) RemoveCrontabEntryByID(id uuid.UUID) error {
 	allEntries, err := cM.GetAllCrontabEntries()
 	if err != nil {
 		return err
@@ -133,7 +141,9 @@ func (cM CrontabManager) RemoveCrontabEntryByID(id uuid.UUID) error {
 	return nil
 }
 
-func (cM CrontabManager) withCrontab(fn func(f *os.File) error) error {
+func (cM *CrontabManager) withCrontab(fn func(f *os.File) error) error {
+	cM.mu.Lock()
+	defer cM.mu.Unlock()
 	file := config.Config.CrontabFile
 	if file == "" {
 		return errCrontabFileNotSet
@@ -154,7 +164,9 @@ func (cM CrontabManager) withCrontab(fn func(f *os.File) error) error {
 	return nil
 }
 
-func (cM CrontabManager) emptyCrontab() error {
+func (cM *CrontabManager) emptyCrontab() error {
+	cM.mu.Lock()
+	defer cM.mu.Unlock()
 	file := config.Config.CrontabFile
 	if file == "" {
 		return errCrontabFileNotSet

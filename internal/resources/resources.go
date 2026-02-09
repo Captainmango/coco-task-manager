@@ -14,6 +14,7 @@ type Resources struct {
 
 func CreateResources() Resources {
 	queueHandler, err := msq.NewRabbitMQHandler(msq.WithConnStr(config.Config.RabbitMQHost))
+	crontabHandler := crontab.NewCrontabManager()
 
 	if err != nil {
 		slog.Error(err.Error())
@@ -21,8 +22,8 @@ func CreateResources() Resources {
 
 	return Resources{
 		CreateTaskResource(
-			crontab.CrontabManager{},
+			crontabHandler,
 			queueHandler,
-		), // Maybe need to DI this for int testing?
+		),
 	}
 }
