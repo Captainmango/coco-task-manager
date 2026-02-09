@@ -27,8 +27,8 @@
     - [x] Docker compose?
     - [x] env vars?
   - [x] Command to push to topic
-  - [ ] Test Pull Messages (need a few in there)
-  - [ ] DTO for message send?
+  - [x] Test Pull Messages (need a few in there)
+  - [x] DTO for message send?
   - [ ] Tests?
     - [ ] TestContainers using the compose file
 

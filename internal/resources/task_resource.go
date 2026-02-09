@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"encoding/json"
 	"log/slog"
 
 	"github.com/google/uuid"
@@ -86,7 +87,12 @@ func (t TaskResource) RemoveTaskByID(id uuid.UUID) error {
 }
 
 func (t TaskResource) PushStartGameMessage(p msq.StartGamePayload) error {
-	err := t.msgQueueHandler.PushMessage("coco_tasks.start_game", p.RoomId)
+	msgPayload, err := json.Marshal(p)
+	if err != nil {
+		return err
+	}
+
+	err = t.msgQueueHandler.PushMessage("coco_tasks.start_game", string(msgPayload))
 
 	if err != nil {
 		return err

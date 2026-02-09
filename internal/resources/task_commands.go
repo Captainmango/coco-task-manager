@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/rabbitmq/amqp091-go"
+	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/urfave/cli/v3"
 
 	"github.com/captainmango/coco-cron-parser/internal/msq"
@@ -57,7 +57,7 @@ func createPullMessagesCommand(tR TaskResource) *cli.Command {
 			var forever chan struct{}
 			// nolint:errcheck // This is for debugging purposes.
 			go func() error {
-				err := tR.ProcessMessages(ctx, "coco_tasks.start_game", func(msg amqp091.Delivery) error {
+				err := tR.ProcessMessages(ctx, "coco_tasks.start_game", func(msg amqp.Delivery) error {
 					slog.Info("Message received", slog.String("body", string(msg.Body)))
 					return nil
 				})
