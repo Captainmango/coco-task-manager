@@ -55,7 +55,8 @@ func createPullMessagesCommand(tR TaskResource) *cli.Command {
 			}
 
 			var forever chan struct{}
-			go func () error {
+			// nolint:errcheck // This is for debugging purposes.
+			go func() error {
 				err := tR.ProcessMessages(ctx, "coco_tasks.start_game", func(msg amqp091.Delivery) error {
 					slog.Info("Message received", slog.String("body", string(msg.Body)))
 					return nil

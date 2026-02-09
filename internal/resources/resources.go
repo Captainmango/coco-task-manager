@@ -18,7 +18,7 @@ func CreateResources() Resources {
 	if err != nil {
 		slog.Error(err.Error())
 	}
-	
+
 	return Resources{
 		CreateTaskResource(
 			crontab.CrontabManager{},

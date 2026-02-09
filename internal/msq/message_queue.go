@@ -6,7 +6,7 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-type ConsumeMessageFn func (msg amqp.Delivery) error
+type ConsumeMessageFn func(msg amqp.Delivery) error
 
 type AdvancedMessageQueueHandler interface {
 	PushMessage(routingKey, body string) error
