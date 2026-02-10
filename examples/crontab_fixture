@@ -1,0 +1,3 @@
+* * * * * root /app/cli start-game 1 2>&1 | tee -a /tmp/log # 00000000-0000-0000-0000-000000000001
+* * * * * root /app/cli start-game 2 2>&1 | tee -a /tmp/log # 00000000-0000-0000-0000-000000000002
+* * * * * root /app/cli start-game 3 2>&1 | tee -a /tmp/log # 00000000-0000-0000-0000-000000000003
