@@ -65,7 +65,9 @@ func NewRabbitMQHandler(opts ...RabbitMQOptFn) (*RabbitMQHandler, error) {
 	}
 	defer rbmq.returnChannel(ch)
 
-	err = exchangeDefinition(ch)
+	if err = exchangeDefinition(ch); err != nil {
+		return nil, err
+	}
 
 	return rbmq, nil
 }
@@ -236,7 +238,7 @@ func (rbmq *RabbitMQHandler) ConsumeMessages(ctx context.Context, routingKey str
 	msgs, err := ch.Consume(
 		q.Name, // queue
 		"",     // consumer
-		false,   // auto ack
+		false,  // auto ack
 		false,  // exclusive
 		false,  // no local
 		false,  // no wait

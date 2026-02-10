@@ -13,6 +13,8 @@ require (
 	github.com/urfave/cli/v3 v3.6.1
 )
 
+require github.com/stretchr/objx v0.5.2 // indirect
+
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/joho/godotenv v1.5.1

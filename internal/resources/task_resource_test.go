@@ -3,25 +3,64 @@ package resources
 import (
 	"testing"
 
-	"github.com/captainmango/coco-cron-parser/internal/config"
+	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
+
+	"github.com/captainmango/coco-cron-parser/internal/crontab"
 	"github.com/captainmango/coco-cron-parser/internal/parser"
-	"github.com/captainmango/coco-cron-parser/internal/utils"
-	"github.com/stretchr/testify/suite"
 )
 
-type TaskResourceTestSuite struct {
-	suite.Suite
-	tR          TaskResource
-	cron        parser.Cron
-	mockResetFn func()
+func Test_ItCanReadCronTabs(t *testing.T) {
+	id, _ := uuid.NewV7()
+
+	mockCrontabHandler := new(mockCrontabHandler)
+	mockQueueHandler := new(mockQueueHandler)
+
+	mockCrontabHandler.On("GetAllCrontabEntries").
+		Return([]crontab.CrontabEntry{
+			{
+				ID:   id,
+				Cron: exampleTestCron(),
+				Cmd:  "test-command",
+			},
+		}, nil)
+
+	tR := CreateTaskResource(mockCrontabHandler, mockQueueHandler)
+
+	d, _ := tR.crontabManager.GetAllCrontabEntries()
+
+	mockCrontabHandler.AssertExpectations(t)
+	assert.NotEmpty(t, d)
 }
 
-func Test_RunTaskResourceTestSuite(t *testing.T) {
-	suite.Run(t, new(TaskResourceTestSuite))
+func exampleTestCron() parser.Cron {
+	return parser.Cron{
+		Data: []parser.CronFragment{
+			{
+				Expr:         "*",
+				Kind:         parser.WILDCARD,
+				FragmentType: parser.MINUTE,
+			},
+			{
+				Expr:         "*",
+				Kind:         parser.WILDCARD,
+				FragmentType: parser.MINUTE,
+			},
+			{
+				Expr:         "*",
+				Kind:         parser.WILDCARD,
+				FragmentType: parser.MINUTE,
+			},
+			{
+				Expr:         "*",
+				Kind:         parser.WILDCARD,
+				FragmentType: parser.MINUTE,
+			},
+			{
+				Expr:         "*",
+				Kind:         parser.WILDCARD,
+				FragmentType: parser.MINUTE,
+			},
+		},
+	}
 }
-
-func (s *TaskResourceTestSuite) SetupTest() {
-	config.BootstrapConfig()
-	config.Config.CrontabFile = utils.BasePath("e2e/storage/crontab")
-}
-

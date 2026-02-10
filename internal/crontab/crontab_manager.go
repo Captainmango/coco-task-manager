@@ -6,9 +6,10 @@ import (
 	"os"
 	"sync"
 
+	"github.com/google/uuid"
+
 	"github.com/captainmango/coco-cron-parser/internal/config"
 	"github.com/captainmango/coco-cron-parser/internal/parser"
-	"github.com/google/uuid"
 )
 
 type CrontabManager struct {
@@ -23,12 +24,15 @@ func NewCrontabManager() *CrontabManager {
 func (cM *CrontabManager) WriteCrontabEntries(crontabs []CrontabEntry) error {
 	err := cM.withCrontab(func(f *os.File) error {
 		for _, ctbE := range crontabs {
+			currPrintingMode := ctbE.Cron.PrintingMode
 			ctbE.Cron.PrintingMode = parser.RAW_EXPRESSION
 
 			_, err := fmt.Fprintf(f, cronFormat, ctbE.Cron, ctbE.Cmd, ctbE.ID)
 			if err != nil {
 				return err
 			}
+
+			ctbE.Cron.PrintingMode = currPrintingMode
 		}
 
 		return nil

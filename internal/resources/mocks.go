@@ -1,0 +1,55 @@
+package resources
+
+import (
+	"context"
+
+	"github.com/captainmango/coco-cron-parser/internal/crontab"
+	"github.com/captainmango/coco-cron-parser/internal/msq"
+	"github.com/google/uuid"
+	"github.com/stretchr/testify/mock"
+)
+
+// Mock of CrontabHandler interface. Used only in tests
+type mockCrontabHandler struct {
+	mock.Mock
+}
+
+func (mch *mockCrontabHandler) GetAllCrontabEntries() ([]crontab.CrontabEntry, error) {
+	args := mch.Called()
+	return args.Get(0).([]crontab.CrontabEntry), args.Error(1)
+}
+
+func (mch *mockCrontabHandler) GetCrontabEntryByID(id uuid.UUID) (crontab.CrontabEntry, error) {
+	args := mch.Called(id)
+	return args.Get(0).(crontab.CrontabEntry), args.Error(1)
+}
+
+func (mch *mockCrontabHandler) WriteCrontabEntries(entries []crontab.CrontabEntry) error {
+	args := mch.Called(entries)
+	return args.Error(0)
+}
+
+func (mch *mockCrontabHandler) RemoveCrontabEntryByID(id uuid.UUID) error {
+	args := mch.Called(id)
+	return args.Error(0)
+}
+
+// Mock of AdvancedMessageQueueHandler interface. Used only in tests
+type mockQueueHandler struct {
+	mock.Mock
+}
+
+func (mqh *mockQueueHandler) PushMessage(routingKey, payload string) error {
+	args := mqh.Called(routingKey, payload)
+	return args.Error(0)
+}
+
+func (mqh *mockQueueHandler) ConsumeMessages(
+	ctx context.Context,
+	routingKey string,
+	fn msq.ConsumeMessageFn,
+) error {
+
+	args := mqh.Called(ctx, routingKey, fn)
+	return args.Error(0)
+}
