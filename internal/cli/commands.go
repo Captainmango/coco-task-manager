@@ -1,4 +1,4 @@
-package resources
+package coco_cli
 
 import (
 	"bytes"
@@ -11,9 +11,10 @@ import (
 	"github.com/urfave/cli/v3"
 
 	"github.com/captainmango/coco-cron-parser/internal/msq"
+	"github.com/captainmango/coco-cron-parser/internal/resources"
 )
 
-func createStartGameCommand(tR TaskResource) *cli.Command {
+func createStartGameCommand(tR resources.TaskResource) *cli.Command {
 	return &cli.Command{
 		Name:        "start-game",
 		Description: "Sends the start game message to the Dealer API",
@@ -41,7 +42,7 @@ func createStartGameCommand(tR TaskResource) *cli.Command {
 	}
 }
 
-func createPullMessagesCommand(tR TaskResource) *cli.Command {
+func createPullMessagesCommand(tR resources.TaskResource) *cli.Command {
 	return &cli.Command{
 		Name:        "pull-messages",
 		Description: "Pulls messages from the given topic. Used primarily for debugging",
@@ -86,7 +87,7 @@ func createPullMessagesCommand(tR TaskResource) *cli.Command {
 	}
 }
 
-func createScheduleCronCommand(tR TaskResource) *cli.Command {
+func createScheduleCronCommand(tR resources.TaskResource) *cli.Command {
 	return &cli.Command{
 		Name:        "schedule-task",
 		Description: "Schedules a task to be run via the scheduler.",
@@ -122,7 +123,7 @@ func createScheduleCronCommand(tR TaskResource) *cli.Command {
 }
 
 func init() {
-	taskResource := CreateResources().TaskResource
+	taskResource := resources.CreateResources().TaskResource
 	CommandRegistry.Register(createStartGameCommand(taskResource))
 	CommandRegistry.Register(createScheduleCronCommand(taskResource))
 	CommandRegistry.Register(createPullMessagesCommand(taskResource))

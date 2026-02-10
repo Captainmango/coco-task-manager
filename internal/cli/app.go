@@ -7,7 +7,6 @@ import (
 	"github.com/urfave/cli/v3"
 
 	"github.com/captainmango/coco-cron-parser/internal/config"
-	"github.com/captainmango/coco-cron-parser/internal/resources"
 )
 
 func CreateCLI() *cli.Command {
@@ -19,6 +18,6 @@ func CreateCLI() *cli.Command {
 	slog.SetDefault(logger)
 
 	return &cli.Command{
-		Commands: resources.CommandRegistry.All(),
+		Commands: CommandRegistry.All(),
 	}
 }

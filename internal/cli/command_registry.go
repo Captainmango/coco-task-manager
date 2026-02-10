@@ -1,4 +1,4 @@
-package resources
+package coco_cli
 
 import (
 	"errors"
