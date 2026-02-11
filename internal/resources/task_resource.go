@@ -71,7 +71,7 @@ func (t TaskResource) ScheduleTask(cron, task string) (uuid.UUID, error) {
 	return id, nil
 }
 
-func (t TaskResource) GetTaskByID(id uuid.UUID) (any, error) {
+func (t TaskResource) GetTaskByID(id uuid.UUID) (crontab.CrontabEntry, error) {
 	ctbE, err := t.crontabManager.GetCrontabEntryByID(id)
 
 	if err != nil {

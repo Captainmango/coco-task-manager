@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/captainmango/coco-cron-parser/internal/crontab"
 	"github.com/captainmango/coco-cron-parser/internal/parser"
@@ -30,7 +31,7 @@ func Test_ItCanReadCronTabs(t *testing.T) {
 
 	tR := CreateTaskResource(mockCrontabHandler, mockQueueHandler)
 
-	d, _ := tR.crontabManager.GetAllCrontabEntries()
+	d, _ := tR.GetAllCrontabEntries()
 
 	mockCrontabHandler.AssertExpectations(t)
 	assert.NotEmpty(t, d)
@@ -47,7 +48,7 @@ func Test_ItReturnsNoCrontabsWhenFileEmpty(t *testing.T) {
 
 	tR := CreateTaskResource(mockCrontabHandler, mockQueueHandler)
 
-	d, _ := tR.crontabManager.GetAllCrontabEntries()
+	d, _ := tR.GetAllCrontabEntries()
 
 	mockCrontabHandler.AssertExpectations(t)
 	assert.Empty(t, d)
@@ -64,13 +65,13 @@ func Test_ItReturnsErrorsWhenFileCannotBeRead(t *testing.T) {
 
 	tR := CreateTaskResource(mockCrontabHandler, mockQueueHandler)
 
-	_, err := tR.crontabManager.GetAllCrontabEntries()
+	_, err := tR.GetAllCrontabEntries()
 
 	mockCrontabHandler.AssertExpectations(t)
 	assert.Error(t, err, "file read error")
 }
 
-func Test_ItCanGetCronById(t *testing.T) {
+func Test_ItCanGetTaskById(t *testing.T) {
 	t.Parallel()
 	id, _ := uuid.NewV7()
 
@@ -88,7 +89,7 @@ func Test_ItCanGetCronById(t *testing.T) {
 
 	tR := CreateTaskResource(mockCrontabHandler, mockQueueHandler)
 
-	d, _ := tR.crontabManager.GetCrontabEntryByID(id)
+	d, _ := tR.GetTaskByID(id)
 
 	mockCrontabHandler.AssertExpectations(t)
 	assert.Equal(t, ctb.ID, d.ID)
@@ -109,7 +110,7 @@ func Test_ItErrorsIfEntryDoesNotExistByID(t *testing.T) {
 
 	tR := CreateTaskResource(mockCrontabHandler, mockQueueHandler)
 
-	d, err := tR.crontabManager.GetCrontabEntryByID(id)
+	d, err := tR.GetTaskByID(id)
 
 	mockCrontabHandler.AssertExpectations(t)
 	assert.Error(t, err, "entry does not exist")
@@ -117,6 +118,112 @@ func Test_ItErrorsIfEntryDoesNotExistByID(t *testing.T) {
 	assert.Equal(t, emptyResult.Cron, d.Cron)
 	assert.Equal(t, emptyResult.Cmd, d.Cmd)
 }
+
+func Test_ItCanWriteTasksToFile(t *testing.T) {
+	t.Parallel()
+
+	mockCrontabHandler := new(mocks.MockCrontabHandler)
+	mockQueueHandler := new(mocks.MockQueueHandler)
+	mockCrontabHandler.On("WriteCrontabEntries", mock.Anything).
+		Return(nil)
+
+	tR := CreateTaskResource(mockCrontabHandler, mockQueueHandler)
+
+	taskId, err := tR.ScheduleTask("* * * * *", "test-command")
+
+	mockCrontabHandler.AssertExpectations(t)
+	assert.Nil(t, err)
+	assert.NotEqual(t, uuid.UUID{}, taskId)
+}
+
+func Test_ItHandlesErrorsWhenWriting(t *testing.T) {
+	t.Parallel()
+
+	id, _ := uuid.NewV7()
+
+	data := []crontab.CrontabEntry{
+		{
+			ID: id,
+			Cron: exampleTestCron(),
+			Cmd: "test-command",
+		},
+	}
+
+	mockCrontabHandler := new(mocks.MockCrontabHandler)
+	mockQueueHandler := new(mocks.MockQueueHandler)
+	mockCrontabHandler.On("WriteCrontabEntries", data).
+		Return().
+		Run(func(args mock.Arguments) {
+			ctb := args.Get(0).(crontab.CrontabEntry)
+			ctb.ID = id
+			args[0] = ctb
+		})
+
+	tR := CreateTaskResource(mockCrontabHandler, mockQueueHandler)
+
+	_, err := tR.ScheduleTask("* * * * *", "test-command")
+
+	mockCrontabHandler.AssertExpectations(t)
+	assert.NotNil(t, err)
+	assert.Error(t, err, "error writing")
+}
+
+func Test_ItCanRemoveCrontabFromFile(t *testing.T) {
+	t.Parallel()
+
+	id, _ := uuid.NewV7()
+
+	mockCrontabHandler := new(mocks.MockCrontabHandler)
+	mockQueueHandler := new(mocks.MockQueueHandler)
+	mockCrontabHandler.On("RemoveCrontabEntryByID", id).
+		Return(nil)
+
+	tR := CreateTaskResource(mockCrontabHandler, mockQueueHandler)
+
+	err := tR.crontabManager.RemoveCrontabEntryByID(id)
+
+	mockCrontabHandler.AssertExpectations(t)
+	assert.Nil(t, err)
+}
+
+func Test_ItHandlesErrorWhenRemovingFromFile(t *testing.T) {
+	t.Parallel()
+
+	id, _ := uuid.NewV7()
+
+	mockCrontabHandler := new(mocks.MockCrontabHandler)
+	mockQueueHandler := new(mocks.MockQueueHandler)
+	mockCrontabHandler.On("RemoveCrontabEntryByID", id).
+		Return(errors.New("error removing"))
+
+	tR := CreateTaskResource(mockCrontabHandler, mockQueueHandler)
+
+	err := tR.crontabManager.RemoveCrontabEntryByID(id)
+
+	mockCrontabHandler.AssertExpectations(t)
+	assert.NotNil(t, err)
+	assert.Error(t, err, "error removing")
+}
+
+func Test_ItCanPushMessages(t *testing.T) {
+	t.Parallel()
+
+	id, _ := uuid.NewV7()
+
+	mockCrontabHandler := new(mocks.MockCrontabHandler)
+	mockQueueHandler := new(mocks.MockQueueHandler)
+	mockCrontabHandler.On("RemoveCrontabEntryByID", id).
+		Return(errors.New("error removing"))
+
+	tR := CreateTaskResource(mockCrontabHandler, mockQueueHandler)
+
+	err := tR.crontabManager.RemoveCrontabEntryByID(id)
+
+	mockCrontabHandler.AssertExpectations(t)
+	assert.NotNil(t, err)
+	assert.Error(t, err, "error removing")
+}
+
 
 func exampleTestCron() parser.Cron {
 	return parser.Cron{
