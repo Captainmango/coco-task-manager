@@ -23,6 +23,7 @@ type CronTabManagerTestSuite struct {
 }
 
 func Test_RunManagerTestSuite(t *testing.T) {
+	t.Parallel()
 	suite.Run(t, new(CronTabManagerTestSuite))
 }
 

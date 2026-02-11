@@ -11,6 +11,7 @@ import (
 )
 
 func Test_ItCanReadCronTabs(t *testing.T) {
+	t.Parallel()
 	id, _ := uuid.NewV7()
 
 	mockCrontabHandler := new(mockCrontabHandler)
