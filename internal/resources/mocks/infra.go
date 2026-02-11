@@ -3,10 +3,11 @@ package mocks
 import (
 	"context"
 
-	"github.com/captainmango/coco-cron-parser/internal/crontab"
-	"github.com/captainmango/coco-cron-parser/internal/msq"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
+
+	"github.com/captainmango/coco-cron-parser/internal/crontab"
+	"github.com/captainmango/coco-cron-parser/internal/msq"
 )
 
 // Mock of CrontabHandler interface. Used only in tests

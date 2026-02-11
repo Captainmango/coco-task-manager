@@ -50,6 +50,9 @@ linters:
         path: internal/http/handlers.go
       - linters:
           - errcheck
+        path: internal/resources/mocks/infra.go
+      - linters:
+          - errcheck
           - gosec
         path: internal/parser/*.
     paths:

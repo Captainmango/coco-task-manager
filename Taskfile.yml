@@ -32,7 +32,7 @@ tasks:
     silent: true
   
   format:
-    desc: Run the linter
+    desc: Run the formatter
     cmds:
       - golangci-lint fmt -c .golangci.yml
     silent: true
