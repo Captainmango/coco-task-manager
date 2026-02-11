@@ -8,6 +8,7 @@ import (
 )
 
 func Test_ItGetsCrontabFile(t *testing.T) {
+	t.Parallel()
 	os.Setenv("CRONTAB_FILE", "test.value")
 
 	BootstrapConfig()
@@ -16,6 +17,7 @@ func Test_ItGetsCrontabFile(t *testing.T) {
 }
 
 func Test_ItSuppliesDefaultCronTab(t *testing.T) {
+	t.Parallel()
 	BootstrapConfig()
 
 	assert.NotEqual(t, "", Config.CrontabFile)

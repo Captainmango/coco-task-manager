@@ -6,6 +6,7 @@ import (
 )
 
 func Test_WildCard(t *testing.T) {
+	t.Parallel()
 	cf := CronFragment{
 		Expr:         "*",
 		FragmentType: WEEKDAY,
@@ -22,6 +23,7 @@ func Test_WildCard(t *testing.T) {
 }
 
 func Test_Range(t *testing.T) {
+	t.Parallel()
 	cf := CronFragment{
 		Expr:         "1-5",
 		FragmentType: WEEKDAY,
@@ -39,6 +41,7 @@ func Test_Range(t *testing.T) {
 }
 
 func Test_List(t *testing.T) {
+	t.Parallel()
 	cf := CronFragment{
 		Expr:         "1,5",
 		FragmentType: WEEKDAY,
@@ -56,6 +59,7 @@ func Test_List(t *testing.T) {
 }
 
 func Test_Divisor(t *testing.T) {
+	t.Parallel()
 	cf := CronFragment{
 		Expr:         "*/5",
 		FragmentType: WEEKDAY,
@@ -73,6 +77,7 @@ func Test_Divisor(t *testing.T) {
 }
 
 func Test_Single(t *testing.T) {
+	t.Parallel()
 	cf := CronFragment{
 		Expr:         "5",
 		FragmentType: WEEKDAY,
@@ -90,6 +95,7 @@ func Test_Single(t *testing.T) {
 }
 
 func Test_Validation(t *testing.T) {
+	t.Parallel()
 	cf := CronFragment{
 		Expr:         "100",
 		FragmentType: WEEKDAY,

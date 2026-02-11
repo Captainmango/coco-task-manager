@@ -75,7 +75,7 @@ func (t TaskResource) GetTaskByID(id uuid.UUID) (crontab.CrontabEntry, error) {
 	ctbE, err := t.crontabManager.GetCrontabEntryByID(id)
 
 	if err != nil {
-		return crontab.CrontabEntry{}, nil
+		return crontab.CrontabEntry{}, err
 	}
 
 	return ctbE, nil

@@ -74,6 +74,7 @@ func Test_ItHandlesBasicInputs(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
 			p, _ := NewParser(
 				WithInput(testCase.input, false),
 			)
@@ -298,6 +299,7 @@ func Test_ItHandlesComplexInputs(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
 			p, _ := NewParser(
 				WithInput(testCase.input, true),
 			)
