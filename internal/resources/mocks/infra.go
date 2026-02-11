@@ -1,4 +1,4 @@
-package resources
+package mocks
 
 import (
 	"context"
@@ -10,41 +10,41 @@ import (
 )
 
 // Mock of CrontabHandler interface. Used only in tests
-type mockCrontabHandler struct {
+type MockCrontabHandler struct {
 	mock.Mock
 }
 
-func (mch *mockCrontabHandler) GetAllCrontabEntries() ([]crontab.CrontabEntry, error) {
+func (mch *MockCrontabHandler) GetAllCrontabEntries() ([]crontab.CrontabEntry, error) {
 	args := mch.Called()
 	return args.Get(0).([]crontab.CrontabEntry), args.Error(1)
 }
 
-func (mch *mockCrontabHandler) GetCrontabEntryByID(id uuid.UUID) (crontab.CrontabEntry, error) {
+func (mch *MockCrontabHandler) GetCrontabEntryByID(id uuid.UUID) (crontab.CrontabEntry, error) {
 	args := mch.Called(id)
 	return args.Get(0).(crontab.CrontabEntry), args.Error(1)
 }
 
-func (mch *mockCrontabHandler) WriteCrontabEntries(entries []crontab.CrontabEntry) error {
+func (mch *MockCrontabHandler) WriteCrontabEntries(entries []crontab.CrontabEntry) error {
 	args := mch.Called(entries)
 	return args.Error(0)
 }
 
-func (mch *mockCrontabHandler) RemoveCrontabEntryByID(id uuid.UUID) error {
+func (mch *MockCrontabHandler) RemoveCrontabEntryByID(id uuid.UUID) error {
 	args := mch.Called(id)
 	return args.Error(0)
 }
 
 // Mock of AdvancedMessageQueueHandler interface. Used only in tests
-type mockQueueHandler struct {
+type MockQueueHandler struct {
 	mock.Mock
 }
 
-func (mqh *mockQueueHandler) PushMessage(routingKey, payload string) error {
+func (mqh *MockQueueHandler) PushMessage(routingKey, payload string) error {
 	args := mqh.Called(routingKey, payload)
 	return args.Error(0)
 }
 
-func (mqh *mockQueueHandler) ConsumeMessages(
+func (mqh *MockQueueHandler) ConsumeMessages(
 	ctx context.Context,
 	routingKey string,
 	fn msq.ConsumeMessageFn,
