@@ -32,16 +32,15 @@
   - [x] Tests?
     - [x] TestContainers using the compose file
 
-- [ ] Pin more of the functionality under test
-  - [ ] API integration tests
-  - [ ] Service level unit tests
-  - [ ] CLI Integration tests
+- [x] Pin more of the functionality under test
+  - [x] API integration tests
+  - [x] Service level unit tests
 
 - [ ] CI
   - [ ] Run the unit/ int tests
   - [ ] Run the e2e tests with Hurl
   - [ ] Reports?
-  - [x] Linting (local and on github)
+  - [ ] Linting (local and on github)
 
 - [ ] Kustomize?
   - [ ] Deployment (no need for statefulness)
