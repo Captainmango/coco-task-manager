@@ -92,7 +92,7 @@ func (t TaskResource) PushStartGameMessage(p msq.StartGamePayload) error {
 		return err
 	}
 
-	err = t.msgQueueHandler.PushMessage("coco_tasks.start_game", string(msgPayload))
+	err = t.msgQueueHandler.PushMessage(p.GetRoutingKey(), string(msgPayload))
 
 	if err != nil {
 		return err

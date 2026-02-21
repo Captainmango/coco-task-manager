@@ -22,6 +22,7 @@ type RabbitMQHandler struct {
 	closed     bool
 	poolSize   int
 	timeout    time.Duration
+	onReadyFn  func() // So we can synchronise publish and subscribe in tests
 }
 
 type RabbitMQOptFn func(*RabbitMQHandler) error
@@ -96,6 +97,13 @@ func WithPoolSize(poolSize int) RabbitMQOptFn {
 func WithConnectTimeout(timeout time.Duration) RabbitMQOptFn {
 	return func(rm *RabbitMQHandler) error {
 		rm.timeout = timeout
+		return nil
+	}
+}
+
+func WithOnReadyFn(readyFn func()) RabbitMQOptFn {
+	return func(rm *RabbitMQHandler) error {
+		rm.onReadyFn = readyFn
 		return nil
 	}
 }
@@ -190,7 +198,12 @@ func (rbmq *RabbitMQHandler) PushMessage(routingKey, body string) error {
 	return nil
 }
 
-func (rbmq *RabbitMQHandler) ConsumeMessages(ctx context.Context, routingKey string, fn ConsumeMessageFn) error {
+func (rbmq *RabbitMQHandler) ConsumeMessages(
+	ctx context.Context,
+	routingKey string,
+	fn ConsumeMessageFn,
+) error {
+
 	rbmq.mu.RLock()
 	if rbmq.closed {
 		rbmq.mu.RUnlock()
@@ -252,6 +265,10 @@ func (rbmq *RabbitMQHandler) ConsumeMessages(ctx context.Context, routingKey str
 	slog.Info("Consuming messages",
 		slog.String("topic", routingKey),
 	)
+
+	if rbmq.onReadyFn != nil {
+		rbmq.onReadyFn()
+	}
 
 	for {
 		select {

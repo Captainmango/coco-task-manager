@@ -29,8 +29,8 @@
   - [x] Command to push to topic
   - [x] Test Pull Messages (need a few in there)
   - [x] DTO for message send?
-  - [ ] Tests?
-    - [ ] TestContainers using the compose file
+  - [x] Tests?
+    - [x] TestContainers using the compose file
 
 - [ ] Pin more of the functionality under test
   - [ ] API integration tests
