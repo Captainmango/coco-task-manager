@@ -3,7 +3,6 @@ package coco_http
 import (
 	"fmt"
 	"net/http"
-	"slices"
 	"strings"
 
 	"github.com/go-chi/chi/v5"
@@ -60,9 +59,14 @@ func (a *app) handleGetTasks(w http.ResponseWriter, r *http.Request) {
 
 	var out []TaskResponse
 	for _, cmd := range cmds {
+		var args []string
+		if cmd.Args() != nil {
+			args = cmd.Args().Slice()
+		}
+
 		tOut := TaskResponse{
 			Slug: cmd.Name,
-			Args: slices.Concat(cmd.Args().Slice()),
+			Args: args,
 		}
 
 		out = append(out, tOut)
