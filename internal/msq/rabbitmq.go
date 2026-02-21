@@ -219,12 +219,12 @@ func (rbmq *RabbitMQHandler) ConsumeMessages(
 	defer ch.Close()
 
 	q, err := ch.QueueDeclare(
-		"",    // name
-		false, // durable
-		false, // delete when unused
-		true,  // exclusive
-		false, // no-wait
-		nil,   // arguments
+		"coco", // name
+		true,   // durable
+		false,  // delete when unused
+		true,   // exclusive
+		false,  // no-wait
+		nil,    // arguments
 	)
 	if err != nil {
 		slog.Error(err.Error())
